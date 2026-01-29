@@ -8,12 +8,27 @@ This guide walks you through setting up NHI-CORE on a virgin Proxmox environment
 
 ## Prerequisites
 
-| What | Required |
-|------|----------|
-| Proxmox VE | 8.0+ installed on mini PC |
-| Windows PC | With VS Code/Cursor + Antigravity |
-| GitHub account | For repository access |
-| Network | Both machines on same LAN |
+> ⚠️ **IMPORTANT**: Before starting, you must have a Proxmox API Token ready!
+
+| What | Required | Notes |
+|------|----------|-------|
+| **Proxmox API Token** | ✅ REQUIRED | See Section 1.1 below |
+| Proxmox VE | 8.0+ installed on mini PC | |
+| Windows PC | With VS Code/Cursor + Antigravity | |
+| GitHub account | For repository access | |
+| Network | Both machines on same LAN | |
+
+### How to Create the Proxmox API Token (BEFORE installation)
+
+1. Login to Proxmox WebUI: `https://<PROXMOX_IP>:8006`
+2. Navigate: **Datacenter → Permissions → API Tokens**
+3. Click **Add**:
+   - User: `root@pam`
+   - Token ID: `nhi-core` (or `ai-scanner`)
+   - ❌ **Uncheck "Privilege Separation"**
+4. **📋 COPY THE SECRET IMMEDIATELY** (shown only once!)
+   - Format: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
+   - You will need this during genesis.sh installation
 
 ---
 

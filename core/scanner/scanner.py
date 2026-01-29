@@ -33,13 +33,27 @@ class ProxmoxScanner:
     
     def _get_token_secret(self) -> str:
         """Read Proxmox token secret from secure storage."""
-        secret_path = os.path.join(
-            self.config['paths']['data'], 
-            'secrets', 
-            '.proxmox_token'
+        data_path = self.config['paths']['data']
+        
+        # Try new v1.1 path first (YAML format)
+        yaml_path = os.path.join(data_path, 'secrets', 'infrastructure', 'proxmox.yaml')
+        if os.path.exists(yaml_path):
+            with open(yaml_path, 'r') as f:
+                secrets = yaml.safe_load(f)
+                if secrets and 'proxmox_token' in secrets:
+                    return secrets['proxmox_token'].strip()
+        
+        # Fallback to legacy path (plain text)
+        legacy_path = os.path.join(data_path, 'secrets', '.proxmox_token')
+        if os.path.exists(legacy_path):
+            with open(legacy_path, 'r') as f:
+                return f.read().strip()
+        
+        raise FileNotFoundError(
+            f"Proxmox token not found. Expected at:\n"
+            f"  - {yaml_path} (v1.1 format)\n"
+            f"  - {legacy_path} (legacy format)"
         )
-        with open(secret_path, 'r') as f:
-            return f.read().strip()
     
     def _connect(self) -> ProxmoxAPI:
         """Establish connection to Proxmox API."""

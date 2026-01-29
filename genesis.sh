@@ -133,7 +133,14 @@ setup_directories() {
 install_dependencies() {
     log_info "Installing system dependencies..."
     
+    # Make apt fully non-interactive
+    export DEBIAN_FRONTEND=noninteractive
+    
     apt-get update -qq
+    
+    # Install openssh-server first with force-confold to keep our SSH config
+    apt-get -o Dpkg::Options::="--force-confold" install -y -qq openssh-server
+    
     apt-get install -y -qq \
         python3 \
         python3-pip \
@@ -293,7 +300,9 @@ setup_ai_agent() {
         useradd -m -s /bin/bash "${AI_AGENT_USER}"
         echo "${AI_AGENT_USER} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${AI_AGENT_USER}"
         chmod 440 "/etc/sudoers.d/${AI_AGENT_USER}"
-        log_success "User ${AI_AGENT_USER} created"
+        # Set password for the user (same as root for convenience)
+        echo "${AI_AGENT_USER}:patatina" | chpasswd
+        log_success "User ${AI_AGENT_USER} created with password"
     else
         log_success "User ${AI_AGENT_USER} already exists"
     fi
@@ -555,8 +564,27 @@ main() {
     echo "  3. Open VS Code/Cursor with workspace: N:\\"
     echo "  4. Check logs: tail -f ${NHI_LOG}/cron.log"
     echo ""
-    log_warn "Remember: Your Master Key is in ${NHI_DATA}/age/master.key - KEEP IT SAFE!"
+    
+    # Print all keys for user to save
+    echo -e "${RED}╔═══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${RED}║     🔐 CRITICAL: SAVE THESE KEYS NOW! 🔐                      ║${NC}"
+    echo -e "${RED}╚═══════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    echo -e "${YELLOW}=== MASTER KEY (can decrypt EVERYTHING) ===${NC}"
+    cat "${NHI_DATA}/age/master.key"
+    echo ""
+    echo -e "${YELLOW}=== HOST KEY (infrastructure secrets) ===${NC}"
+    cat "${NHI_DATA}/age/host.key"
+    echo ""
+    echo -e "${YELLOW}=== SERVICES KEY (application secrets) ===${NC}"
+    cat "${NHI_DATA}/age/services.key"
+    echo ""
+    echo -e "${RED}═══════════════════════════════════════════════════════════════${NC}"
+    echo ""
+    log_warn "Copy these keys to a USB drive or password manager!"
+    log_warn "Without the Master Key, you CANNOT recover from disaster!"
     echo ""
 }
 
 main "$@"
+
