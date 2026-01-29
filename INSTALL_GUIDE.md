@@ -158,6 +158,30 @@ python install.py
 - `infrastructure.yaml` created in `/var/lib/nhi/`
 - `.cursorrules` created in `/var/lib/nhi/context/`
 
+### 2.4 Enable Autonomous Lifecycle Management (Crucial)
+
+To allow NHI-CORE to create and configure new LXC containers (bypassing Proxmox API bugs and Ubuntu security defaults), you must enable **Host-Level Access**.
+
+1. **Add Proxmox Root Password to Vault**:
+   NHI-CORE needs the root password to authenticate via API (Tokens are limited).
+   ```bash
+   # Add to vault (automated by genesis.sh in future)
+   echo "root_password: 'YOUR_ROOT_PASSWORD'" >> /var/lib/nhi/secrets/vault_decrypted.yml
+   # Re-encrypt
+   ansible-vault encrypt /var/lib/nhi/secrets/vault_decrypted.yml
+   ```
+
+2. **Enable SSH Control from Brain to Host**:
+   Copy NHI-CORE's key to Proxmox Host to allow executing `pct exec` commands (fixing SSH access on new containers).
+   ```bash
+   # From Brain (LXC 110)
+   ssh-copy-id -i /home/ai-agent/.ssh/id_ed25519.pub root@192.168.1.2
+   ```
+
+**Why is this needed?**
+- **Creation**: API Tokens cannot set root passwords on privileged containers (403 Forbidden). We use Root Auth.
+- **Access**: Ubuntu 24.04 blocks password auth by default. We use `ssh root@host "pct exec ID ..."` to force-enable it post-creation.
+
 ---
 
 ## Phase 3: Prepare for Antigravity (5 min)
