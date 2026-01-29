@@ -1,0 +1,4 @@
+proxmoxer>=2.0.0
+PyYAML>=6.0
+requests>=2.31.0
+python-gnupg>=0.5.0

@@ -1,0 +1,28 @@
+# LXC Container Template
+# Use with: pct create <vmid> <template> --config <this-file>
+
+arch: amd64
+cores: 2
+memory: 2048
+swap: 512
+rootfs: local-lvm:8
+net0: name=eth0,bridge=vmbr0,ip=dhcp
+ostype: ubuntu
+unprivileged: 1
+
+# Features
+features:
+  nesting: 1
+  keyctl: 1
+
+# SSH Key (replace with your public key)
+# ssh-public-keys: ssh-ed25519 AAAAC3...
+
+# Tags for organization
+tags:
+  - nhi-managed
+  - template
+
+# Startup behavior
+onboot: 1
+startup: order=50

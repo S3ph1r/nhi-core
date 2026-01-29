@@ -1,0 +1,44 @@
+# Service Template
+# Use for defining new services in the homelab
+
+service:
+  name: "my-service"
+  description: "Service description"
+  
+  # Deployment target
+  target:
+    type: lxc  # or vm
+    vmid: null  # assign automatically or specify
+    ip: null    # assign automatically or specify
+  
+  # Resource requirements
+  resources:
+    cpu: 2
+    memory: 2048    # MB
+    disk: 10        # GB
+  
+  # Network ports
+  ports:
+    - port: 8000
+      protocol: tcp
+      description: "API endpoint"
+  
+  # Dependencies on other services
+  dependencies:
+    - name: postgresql
+      ip: 192.168.1.105
+      port: 5432
+    - name: redis
+      ip: 192.168.1.100
+      port: 6379
+  
+  # Health check
+  healthcheck:
+    endpoint: "/health"
+    interval: 30    # seconds
+    timeout: 10     # seconds
+  
+  # Documentation
+  docs:
+    repo: "https://github.com/user/repo"
+    manifest: "/path/to/project_manifest.md"
