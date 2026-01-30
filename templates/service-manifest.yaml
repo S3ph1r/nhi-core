@@ -1,0 +1,50 @@
+# NHI Service Manifest Template
+# Copy this file to /var/lib/nhi/registry/services/<service-name>.yaml
+
+# Service Identity
+service:
+  name: "{{SERVICE_NAME}}"
+  description: "{{SERVICE_DESCRIPTION}}"
+  version: "{{VERSION}}"
+
+# Deployment Configuration
+deployment:
+  type: "docker"                    # docker | systemd | native
+  lxc_id: {{LXC_ID}}
+  ip: "{{IP}}"
+  ports:
+    - {{PORT}}                      # Primary port
+    # - 9100                        # Metrics port (if applicable)
+
+# Health Check Configuration
+health:
+  endpoint: "/health"
+  interval: "30s"
+  timeout: "10s"
+
+# Service Dependencies
+dependencies:
+  # - postgresql                    # Uncomment if used
+  # - redis                         # Uncomment if used
+  # - chromadb                      # Uncomment if used
+
+# Access Control
+owner: "ai-agent"
+status: "active"                    # active | maintenance | deprecated
+
+# Metadata
+metadata:
+  created: "{{DATE}}"
+  updated: "{{DATE}}"
+  repository: "{{REPO_URL}}"
+  documentation: ""
+  
+# Optional: Environment-specific config
+# environments:
+#   production:
+#     replicas: 1
+#     resources:
+#       cpu: "0.5"
+#       memory: "512M"
+#   development:
+#     replicas: 1

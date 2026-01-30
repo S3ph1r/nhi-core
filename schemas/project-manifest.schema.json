@@ -1,0 +1,221 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://nhi-core/schemas/project-manifest.schema.json",
+    "title": "NHI Project Manifest",
+    "description": "Schema for NHI project manifest files (project_manifest.md structure)",
+    "type": "object",
+    "required": [
+        "project",
+        "technical",
+        "nhi"
+    ],
+    "properties": {
+        "project": {
+            "type": "object",
+            "required": [
+                "name",
+                "description",
+                "status"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$",
+                    "description": "Project identifier"
+                },
+                "description": {
+                    "type": "string",
+                    "minLength": 10,
+                    "description": "Project purpose"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "development",
+                        "active",
+                        "maintenance",
+                        "deprecated"
+                    ],
+                    "description": "Project lifecycle status"
+                },
+                "version": {
+                    "type": "string",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+                    "description": "Current version"
+                }
+            }
+        },
+        "technical": {
+            "type": "object",
+            "required": [
+                "lxc_id",
+                "ip",
+                "port",
+                "stack"
+            ],
+            "properties": {
+                "lxc_id": {
+                    "type": "integer",
+                    "minimum": 100,
+                    "maximum": 999,
+                    "description": "Target LXC container ID"
+                },
+                "ip": {
+                    "type": "string",
+                    "pattern": "^192\\.168\\.[0-9]+\\.[0-9]+$",
+                    "description": "Service IP address"
+                },
+                "port": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "description": "Primary port"
+                },
+                "stack": {
+                    "type": "string",
+                    "enum": [
+                        "python-fastapi",
+                        "python-flask",
+                        "node-express",
+                        "node-fastify",
+                        "go",
+                        "rust"
+                    ],
+                    "description": "Technology stack"
+                },
+                "repository": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Git repository URL"
+                }
+            }
+        },
+        "dependencies": {
+            "type": "object",
+            "properties": {
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "ip": {
+                                "type": "string"
+                            },
+                            "port": {
+                                "type": "integer"
+                            },
+                            "usage": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "description": "Required NHI services"
+                },
+                "external": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "api": {
+                                "type": "string"
+                            },
+                            "purpose": {
+                                "type": "string"
+                            },
+                            "auth": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "description": "External API dependencies"
+                }
+            }
+        },
+        "health": {
+            "type": "object",
+            "properties": {
+                "endpoint": {
+                    "type": "string",
+                    "default": "/health"
+                },
+                "metrics_endpoint": {
+                    "type": "string",
+                    "default": "/metrics"
+                }
+            }
+        },
+        "security": {
+            "type": "object",
+            "properties": {
+                "credentials_source": {
+                    "type": "string",
+                    "enum": [
+                        "nhi-vault",
+                        "env-file"
+                    ],
+                    "default": "nhi-vault"
+                },
+                "authentication": {
+                    "type": "string",
+                    "enum": [
+                        "jwt",
+                        "api-key",
+                        "oauth2",
+                        "none"
+                    ]
+                },
+                "authorization": {
+                    "type": "string",
+                    "enum": [
+                        "rbac",
+                        "abac",
+                        "none"
+                    ]
+                }
+            }
+        },
+        "nhi": {
+            "type": "object",
+            "required": [
+                "registered"
+            ],
+            "properties": {
+                "registered": {
+                    "type": "boolean",
+                    "description": "Is service registered in NHI?"
+                },
+                "manifest_path": {
+                    "type": "string",
+                    "description": "Path to service manifest"
+                },
+                "in_cursorrules": {
+                    "type": "boolean",
+                    "description": "Appears in .cursorrules?"
+                }
+            }
+        },
+        "metadata": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "updated": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "owner": {
+                    "type": "string",
+                    "default": "ai-agent"
+                },
+                "maintainer": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
