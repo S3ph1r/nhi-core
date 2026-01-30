@@ -78,39 +78,62 @@ collect_inputs() {
 
     # Proxmox Configuration
     echo -e "${BLUE}[1/4] Proxmox Connection${NC}"
-    read -p "Proxmox IP [192.168.1.2]: " PROXMOX_IP
-    PROXMOX_IP=${PROXMOX_IP:-192.168.1.2}
-
-    read -p "Proxmox Root Password: " -s PROXMOX_ROOT_PASSWORD
+    echo -e "  ${YELLOW}You need a Proxmox API Token. Create it in:${NC}"
+    echo -e "  ${YELLOW}Datacenter → Permissions → API Tokens → Add${NC}"
     echo ""
-
-    read -p "Proxmox API Token ID [root@pam!nhi-core]: " PROXMOX_TOKEN_ID
+    
+    echo -n "  Proxmox IP address [192.168.1.2]: "
+    read PROXMOX_IP
+    PROXMOX_IP=${PROXMOX_IP:-192.168.1.2}
+    
+    echo ""
+    echo -e "  ${YELLOW}API Token format: user@realm!token-name${NC}"
+    echo -e "  ${YELLOW}Example: root@pam!nhi-core${NC}"
+    echo -n "  API Token ID [root@pam!nhi-core]: "
+    read PROXMOX_TOKEN_ID
     PROXMOX_TOKEN_ID=${PROXMOX_TOKEN_ID:-root@pam!nhi-core}
-
-    read -s -p "Proxmox Token Secret: " PROXMOX_TOKEN_SECRET
+    
+    echo ""
+    echo -e "  ${YELLOW}Token Secret (the UUID shown when token was created)${NC}"
+    echo -e "  ${YELLOW}Example: bd523352-3956-4045-a07e-339acf0163d3${NC}"
+    echo -n "  API Token Secret: "
+    read -s PROXMOX_TOKEN_SECRET
+    echo ""
+    
+    echo ""
+    echo -e "  ${YELLOW}Proxmox root password (for host access via SSH)${NC}"
+    echo -n "  Root Password: "
+    read -s PROXMOX_ROOT_PASSWORD
     echo ""
 
     # GitHub Configuration
     echo ""
-    echo -e "${BLUE}[2/4] GitHub Configuration (optional)${NC}"
-    read -p "GitHub Repository URL (Enter to skip): " GITHUB_REPO
+    echo -e "${BLUE}[2/4] GitHub Configuration (optional - press Enter to skip)${NC}"
+    echo -n "  GitHub Repository URL: "
+    read GITHUB_REPO
     if [[ -n "$GITHUB_REPO" ]]; then
-        read -s -p "GitHub Personal Access Token: " GITHUB_TOKEN
+        echo -n "  GitHub Personal Access Token: "
+        read -s GITHUB_TOKEN
         echo ""
     fi
 
     # Network Configuration
     echo ""
     echo -e "${BLUE}[3/4] Network Configuration${NC}"
-    read -p "Domain suffix [.home]: " DOMAIN_SUFFIX
+    echo -e "  ${YELLOW}Domain suffix for local hostnames${NC}"
+    echo -n "  Domain suffix [.home]: "
+    read DOMAIN_SUFFIX
     DOMAIN_SUFFIX=${DOMAIN_SUFFIX:-.home}
 
     # AI Agent User
     echo ""
     echo -e "${BLUE}[4/4] AI Agent User${NC}"
-    read -p "AI Agent username [ai-agent]: " AI_AGENT_USER
+    echo -e "  ${YELLOW}Username for AI agent access (with sudo rights)${NC}"
+    echo -n "  AI Agent username [ai-agent]: "
+    read AI_AGENT_USER
     AI_AGENT_USER=${AI_AGENT_USER:-ai-agent}
 
+    echo ""
     log_success "Configuration collected"
 }
 

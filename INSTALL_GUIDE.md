@@ -8,17 +8,21 @@ This guide walks you through setting up NHI-CORE on a virgin Proxmox environment
 
 ## Prerequisites
 
-> ⚠️ **IMPORTANT**: Before starting, you must have a Proxmox API Token ready!
+> ⚠️ **IMPORTANT**: Complete BOTH steps below BEFORE running the installer!
+
+### 1. Required Items
 
 | What | Required | Notes |
 |------|----------|-------|
-| **Proxmox API Token** | ✅ REQUIRED | See Section 1.1 below |
-| Proxmox VE | 8.0+ installed on mini PC | |
+| **Proxmox API Token** | ✅ REQUIRED | Create BEFORE installation (see below) |
+| **Windows SSH Key** | ✅ REQUIRED | Generate BEFORE installation (see below) |
+| Proxmox VE | 8.0+ installed | |
 | Windows PC | With VS Code/Cursor + Antigravity | |
-| GitHub account | For repository access | |
 | Network | Both machines on same LAN | |
 
-### How to Create the Proxmox API Token (BEFORE installation)
+---
+
+### 2. Create Proxmox API Token (BEFORE installation)
 
 1. Login to Proxmox WebUI: `https://<PROXMOX_IP>:8006`
 2. Navigate: **Datacenter → Permissions → API Tokens**
@@ -26,9 +30,33 @@ This guide walks you through setting up NHI-CORE on a virgin Proxmox environment
    - User: `root@pam`
    - Token ID: `nhi-core` (or `ai-scanner`)
    - ❌ **Uncheck "Privilege Separation"**
-4. **📋 COPY THE SECRET IMMEDIATELY** (shown only once!)
+4. **📋 COPY THE SECRET** - Shown only once!
    - Format: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
-   - You will need this during genesis.sh installation
+   - Save it somewhere safe, you'll need it during installation
+
+---
+
+### 3. Generate Windows SSH Key (BEFORE installation)
+
+The AI agent user needs your SSH public key for passwordless access.
+
+**Check if you already have a key:**
+```powershell
+Get-Content $env:USERPROFILE\.ssh\id_ed25519.pub
+```
+
+**If no key exists, generate one:**
+```powershell
+ssh-keygen -t ed25519 -C "antigravity"
+# Press Enter for all prompts (no passphrase)
+```
+
+**Copy your public key to clipboard:**
+```powershell
+Get-Content $env:USERPROFILE\.ssh\id_ed25519.pub | Set-Clipboard
+```
+
+You'll paste this key after installation to enable AI agent access.
 
 ---
 
