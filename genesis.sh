@@ -174,7 +174,6 @@ setup_directories() {
     chmod 700 "${NHI_DATA}/secrets"
     chmod 700 "${NHI_DATA}/age"
     chmod 775 "${NHI_DATA}/cache"  # Writable by ai-agent for dependency graph
-    chown -R "${AI_AGENT_USER}:${AI_AGENT_USER}" "${NHI_DATA}/cache"
     
     log_success "Directories created"
 }
@@ -369,6 +368,7 @@ setup_ai_agent() {
     mkdir -p "${AI_HOME}/.agent/workflows"
     
     chown -R "${AI_AGENT_USER}:${AI_AGENT_USER}" "${AI_HOME}"
+    chown -R "${AI_AGENT_USER}:${AI_AGENT_USER}" "${NHI_DATA}/cache"  # Fix: Perms for cache
     
     log_success "AI agent user configured"
     
