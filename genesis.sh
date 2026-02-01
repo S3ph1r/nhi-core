@@ -21,11 +21,7 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Configuration
-NHI_VERSION="1.1.0"
-NHI_HOME="/opt/nhi-core"
-NHI_DATA="/var/lib/nhi"
-NHI_LOG="/var/log/nhi"
+
 # Configuration
 NHI_VERSION="1.1.0"
 NHI_HOME="/opt/nhi-core"
@@ -106,55 +102,6 @@ EOF
     log_success "NHI API service installed and started"
 }
 
-# ... (in main) ...
-
-    # Install CLI
-    log_info "Installing NHI CLI..."
-    bash "${NHI_HOME}/install-cli.sh"
-    
-    setup_api_service       # NEW: Start API
-    setup_cron
-    
-    # Initial scan
-    run_initial_scan
-
-#-------------------------------------------------------------------------------
-# Helper Functions
-#-------------------------------------------------------------------------------
-log_info()    { echo -e "${BLUE}[INFO]${NC} $1"; }
-log_success() { echo -e "${GREEN}[OK]${NC} $1"; }
-log_warn()    { echo -e "${YELLOW}[WARN]${NC} $1"; }
-log_error()   { echo -e "${RED}[ERROR]${NC} $1"; }
-log_critical() { echo -e "${RED}[CRITICAL]${NC} $1"; }
-
-check_root() {
-    if [[ $EUID -ne 0 ]]; then
-        log_error "This script must be run as root"
-        exit 1
-    fi
-    log_success "Running as root"
-}
-
-check_os() {
-    if [[ ! -f /etc/os-release ]]; then
-        log_error "Cannot detect OS"
-        exit 1
-    fi
-    source /etc/os-release
-    if [[ "$ID" != "ubuntu" ]]; then
-        log_error "This script requires Ubuntu (detected: $ID)"
-        exit 1
-    fi
-    log_success "OS: Ubuntu $VERSION_ID"
-}
-
-check_internet() {
-    if ! ping -c 1 8.8.8.8 &> /dev/null; then
-        log_error "No internet connectivity"
-        exit 1
-    fi
-    log_success "Internet connectivity OK"
-}
 
 #-------------------------------------------------------------------------------
 # Input Collection
