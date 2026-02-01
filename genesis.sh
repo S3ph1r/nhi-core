@@ -70,6 +70,22 @@ check_internet() {
 # Input Collection
 #-------------------------------------------------------------------------------
 collect_inputs() {
+    # Check for existing configuration
+    if [[ -f "${NHI_DATA}/config.yaml" ]]; then
+        log_info "Existing configuration found at ${NHI_DATA}/config.yaml"
+        log_info "Skipping interactive wizard and using existing settings."
+        
+        # Extract necessary variables for later steps
+        # We use a simple grep/cut here since PyYAML might not be installed yet
+        AI_AGENT_USER=$(grep "user:" "${NHI_DATA}/config.yaml" | head -1 | awk '{print $2}' | tr -d '"')
+        AI_AGENT_USER=${AI_AGENT_USER:-ai-agent} # Fallback
+        
+        # PROXMOX_IP needed for creating keys? No.
+        # Just ensure AI_AGENT_USER is set for chowns.
+        log_success "Loaded settings (AI Agent: ${AI_AGENT_USER})"
+        return 0
+    fi
+
     echo ""
     echo -e "${CYAN}╔═══════════════════════════════════════════════════╗${NC}"
     echo -e "${CYAN}║          NHI-CORE Configuration Wizard            ║${NC}"
