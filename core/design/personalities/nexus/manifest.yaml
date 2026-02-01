@@ -1,0 +1,40 @@
+# NHI Personality: Nexus (Inspired by Punto Informatico)
+# Focus: Information Density, Readability, Tech News
+
+meta:
+  id: nexus
+  name: Tech Nexus
+  version: 1.0.0
+  description: "Dense, information-rich layout for feeds, wikis, and logs."
+
+colors:
+  base:
+    background: "#f3f4f6" # Light gray bg
+    paper: "#ffffff" # White paper
+    header: "#1e3a8a" # PI Blue (Tech Blue)
+    border: "#d1d5db"
+
+  text:
+    primary: "#111827" # High contrast dark
+    secondary: "#4b5563"
+    link: "#2563eb" # Standard blue link
+
+  accent:
+    brand: "#cc0000" # Alert Red
+    tech: "#0ea5e9" # Sky blue
+
+typography:
+  font-family: "'Roboto Condensed', sans-serif" # Dense headers
+  body-font: "'Georgia', serif" # Readable long-form
+  weights:
+    regular: 400
+    bold: 700
+
+effects:
+  shadows:
+    none: "none"
+    card: "0 1px 3px rgba(0,0,0,0.1)"
+
+  borders:
+    radius: "0px" # Sharp corners
+    radius-sm: "2px"

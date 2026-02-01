@@ -1,0 +1,52 @@
+# NHI Personality: Flux (Inspired by Linear.app)
+# Focus: Productivity, Precision, Speed
+
+meta:
+  id: flux
+  name: Flux & Flow
+  version: 1.0.0
+  description: "High-performance interface for productivity tools. Dark mode first."
+
+colors:
+  base:
+    background: "#080808" # Almost black
+    surface: "#121212" # Panel bg
+    surface-hover: "#1a1a1a"
+    border: "#2a2a2a" # Subtle border
+
+  text:
+    primary: "#f3f4f6" # High contrast
+    secondary: "#9ca3af" # Muted
+    tertiary: "#4b5563" # Very muted
+
+  accent:
+    primary: "#5e6ad2" # Linear-like blurple
+    primary-glow: "rgba(94, 106, 210, 0.5)"
+    success: "#27c08d" # Minty green
+    warning: "#f5a623"
+    danger: "#e54d2e"
+
+typography:
+  font-family: "'Inter', sans-serif"
+  weights:
+    regular: 400
+    medium: 500
+    semibold: 600
+
+effects:
+  shadows:
+    sm: "0 1px 2px rgba(0,0,0,0.4)"
+    md: "0 4px 6px -1px rgba(0,0,0,0.5), 0 2px 4px -1px rgba(0,0,0,0.3)"
+    glow: "0 0 20px var(--nhi-color-accent-primary-glow)"
+
+  borders:
+    radius-sm: "4px"
+    radius-md: "6px"
+    radius-lg: "8px"
+    width: "1px"
+
+components:
+  card:
+    bg: "var(--nhi-color-surface)"
+    border: "1px solid var(--nhi-color-border)"
+    hover: "transform: translateY(-1px); border-color: var(--nhi-color-text-tertiary);"

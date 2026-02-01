@@ -293,6 +293,17 @@ def main():
     resolve_parser = deps_sub.add_parser('resolve', help='Resolve service dependencies')
     resolve_parser.add_argument('service', help='Service to resolve')
     resolve_parser.add_argument('--optional', action='store_true', help='Include optional deps')
+
+    # Design commands
+    design_parser = subparsers.add_parser('design', help='Design System management')
+    design_sub = design_parser.add_subparsers(dest='subcommand')
+    
+    # design list
+    design_sub.add_parser('list', help='List available personalities')
+    
+    # design init
+    init_parser = design_sub.add_parser('init', help='Initialize design system in current folder')
+    init_parser.add_argument('--personality', help='Personality ID (flux, glass, nexus, forge)')
     
     # Parse args
     args = parser.parse_args()
@@ -327,6 +338,45 @@ def main():
             return handler(args)
         else:
             deps_parser.print_help()
+            return 0
+
+    elif args.command == 'design':
+        from core.design.manager import DesignSystemManager
+        
+        mgr = DesignSystemManager(core_path=str(nhi_core_path))
+        
+        if args.subcommand == 'list':
+            print("\n🎨 NHI Design System Personalities")
+            print("="*60)
+            personalities = mgr.list_personalities()
+            if not personalities:
+                print("No personalities found.")
+            for p in personalities:
+                print(f"\n🔹 {p['name']} ({p['id']}) v{p['version']}")
+                print(f"   {p['description']}")
+            print()
+            return 0
+            
+        elif args.subcommand == 'init':
+            if not args.personality:
+                print("❌ Please specify a personality with --personality <id>")
+                print("Available: " + ", ".join([p['id'] for p in mgr.list_personalities()]))
+                return 1
+            
+            target_path = Path(os.getcwd()) / "tailwind.config.js"
+            print(f"\n⚙️  Initializing '{args.personality}' personality...")
+            try:
+                mgr.generate_tailwind_config(args.personality, str(target_path))
+                print(f"✅ Generated tailwind.config.js")
+                print(f"   Style: {args.personality}")
+                print(f"   Location: {target_path}")
+            except Exception as e:
+                print(f"❌ Error: {e}")
+                return 1
+            return 0
+        
+        else:
+            design_parser.print_help()
             return 0
     
     else:

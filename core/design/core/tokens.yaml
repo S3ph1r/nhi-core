@@ -1,0 +1,44 @@
+# NHI Design System - Core Tokens
+# Invarianti universali per tutto l'ecosistema
+
+spacing:
+  base: 4px
+  scale:
+    "0": "0px"
+    "1": "4px" # var(--nhi-space-1)
+    "2": "8px"
+    "3": "12px"
+    "4": "16px"
+    "6": "24px"
+    "8": "32px"
+    "12": "48px"
+    "16": "64px"
+    "24": "96px"
+
+breakpoints:
+  sm: "640px"
+  md: "768px"
+  lg: "1024px"
+  xl: "1280px"
+  2xl: "1536px"
+
+z_index:
+  minus: -1
+  base: 0
+  panel: 10
+  header: 50
+  overlay: 100
+  modal: 200
+  toast: 500
+  max: 9999
+
+animation:
+  durations:
+    fast: "150ms"
+    normal: "300ms"
+    slow: "500ms"
+  easings:
+    default: "cubic-bezier(0.4, 0, 0.2, 1)"
+    linear: "linear"
+    in: "cubic-bezier(0.4, 0, 1, 1)"
+    out: "cubic-bezier(0, 0, 0.2, 1)"

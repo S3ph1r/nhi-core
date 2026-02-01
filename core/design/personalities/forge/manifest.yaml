@@ -1,0 +1,41 @@
+# NHI Personality: Forge (Inspired by D&D Beyond)
+# Focus: Thematic, RPG, Character Sheets
+
+meta:
+  id: forge
+  name: Dragon Forge
+  version: 1.0.0
+  description: "Immersive fantasy interface for gaming and creative projects."
+
+colors:
+  base:
+    background: "#121212" # Dungeon dark
+    parchment: "#f0e6d2" # Paper texture base
+    panel: "#1e1e1e"
+    border: "#3a3a3a"
+
+  text:
+    primary: "#e0e0e0" # Off-white
+    on-parchment: "#2d2d2d" # Ink color
+    secondary: "#a0a0a0"
+
+  accent:
+    primary: "#bc2f34" # Dragon Red
+    magic: "#9d70ff" # Purple
+    gold: "#cfaa4c" # Gold metallic
+
+typography:
+  font-family: "'Merriweather', serif"
+  display-font: "'Cinzel', serif" # Fantasy headers
+  weights:
+    regular: 400
+    bold: 700
+
+effects:
+  texture:
+    paper: "url('/textures/parchment.png')"
+    noise: "url('/textures/noise.png')"
+
+  borders:
+    radius: "2px"
+    style: "double" # Double borders

@@ -1,0 +1,42 @@
+# NHI Personality: Glass (Inspired by Plex)
+# Focus: Media, Depth, Visualization
+
+meta:
+  id: glass
+  name: Deep Glass
+  version: 1.0.0
+  description: "Cinematic interface designed for media consumption and HUDs."
+
+colors:
+  base:
+    background: "#1a1d21" # Deep textured dark
+    surface: "rgba(30, 34, 40, 0.7)" # Translucent
+    surface-active: "rgba(229, 160, 13, 0.1)" # Amber tint
+    border: "rgba(255, 255, 255, 0.1)"
+
+  text:
+    primary: "#e5e7eb"
+    secondary: "#9ca3af"
+
+  accent:
+    primary: "#e5a00d" # Plex Amber
+    secondary: "#282a2d" # Slate
+
+typography:
+  font-family: "'Open Sans', sans-serif" # Plex uses Open Sans heavily
+  weights:
+    regular: 400
+    bold: 700
+
+effects:
+  glass:
+    panel: "backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);"
+    overlay: "backdrop-filter: blur(4px);"
+
+  shadows:
+    lg: "0 10px 15px -3px rgba(0, 0, 0, 0.5)"
+
+  borders:
+    radius-sm: "4px"
+    radius-md: "8px"
+    radius-xl: "24px" # Rounded pills
