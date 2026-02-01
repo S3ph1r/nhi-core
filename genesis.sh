@@ -143,12 +143,14 @@ collect_inputs() {
 setup_directories() {
     log_info "Creating directory structure..."
     
-    mkdir -p "${NHI_DATA}"/{context,registry/services,secrets/infrastructure,secrets/services,templates,network,age,schemas}
+    mkdir -p "${NHI_DATA}"/{context,registry/services,secrets/infrastructure,secrets/services,templates,network,age,schemas,cache}
     mkdir -p "${NHI_LOG}"
     mkdir -p "${NHI_HOME}"
     
     chmod 700 "${NHI_DATA}/secrets"
     chmod 700 "${NHI_DATA}/age"
+    chmod 775 "${NHI_DATA}/cache"  # Writable by ai-agent for dependency graph
+    chown -R "${AI_AGENT_USER}:${AI_AGENT_USER}" "${NHI_DATA}/cache"
     
     log_success "Directories created"
 }
@@ -171,7 +173,8 @@ install_dependencies() {
         git \
         curl \
         jq \
-        sshpass
+        sshpass \
+        nfs-common
 
     # Install Age
     if ! command -v age &> /dev/null; then
@@ -379,6 +382,22 @@ network:
   domain_suffix: "${DOMAIN_SUFFIX}"
   dns_ip: "192.168.1.53"
 
+backup:
+  enabled: false
+  storage:
+    primary:
+      type: null
+    offsite:
+      type: null
+      encrypt: true
+  policy:
+    mode: core+infra
+    include: []
+    exclude: []
+  schedule:
+    enabled: false
+    daily: "03:00"
+
 paths:
   data: "${NHI_DATA}"
   logs: "${NHI_LOG}"
@@ -570,6 +589,11 @@ main() {
     save_config
     setup_ip_registry       # NEW: IP allocation
     setup_service_registry  # NEW: Self-registration
+    
+    # Install CLI
+    log_info "Installing NHI CLI..."
+    bash "${NHI_HOME}/install-cli.sh"
+    
     setup_cron
 
     # Initial scan
