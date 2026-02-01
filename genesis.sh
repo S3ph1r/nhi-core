@@ -71,36 +71,7 @@ check_internet() {
 # Actually, I must provide the full content to replace the scattered mess.
 # But replace_file_content works on chunks. I will move helpers up first.
 
-setup_api_service() {
-    log_info "Setting up NHI API service..."
-    
-    SERVICE_FILE="/etc/systemd/system/nhi-api.service"
-    
-    cat > "${SERVICE_FILE}" <<EOF
-[Unit]
-Description=NHI Core API Service
-After=network.target
 
-[Service]
-User=${AI_AGENT_USER}
-Group=${AI_AGENT_USER}
-WorkingDirectory=${NHI_HOME}
-Environment=PATH=${VENV_PATH}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ExecStart=${VENV_PATH}/bin/uvicorn core.api.main:app --host 0.0.0.0 --port 8000
-Restart=always
-RestartSec=3
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-    chmod 644 "${SERVICE_FILE}"
-    systemctl daemon-reload
-    systemctl enable nhi-api
-    systemctl restart nhi-api
-    
-    log_success "NHI API service installed and started"
-}
 
 
 #-------------------------------------------------------------------------------
