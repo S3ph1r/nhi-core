@@ -629,22 +629,7 @@ checklist:
 created: "$(date -Iseconds)"
 updated: "$(date -Iseconds)"
 EOF
-    
-    log_success "Service registry initialized (nhi-core registered)"
-}
-
-#-------------------------------------------------------------------------------
-# Cron Setup
-#-------------------------------------------------------------------------------
-setup_cron() {
-    log_info "Setting up automatic updates..."
-    
-    CRON_CMD="0 * * * * root ${VENV_PATH}/bin/python ${NHI_HOME}/core/context/updater.py >> ${NHI_LOG}/cron.log 2>&1"
-    
-    echo "${CRON_CMD}" > /etc/cron.d/nhi-core
-    chmod 644 /etc/cron.d/nhi-core
-    
-    log_success "Cron job installed (hourly updates)"
+        log_success "Service registry initialized (nhi-core registered)"
 }
 
 #-------------------------------------------------------------------------------
