@@ -90,6 +90,12 @@ collect_inputs() {
         
         # PROXMOX_IP needed for creating keys? No.
         # Just ensure AI_AGENT_USER is set for chowns.
+        
+        if [[ -z "$AI_AGENT_PASSWORD" ]]; then
+             AI_AGENT_PASSWORD=$(openssl rand -base64 12)
+             log_warn "Auto-mode: Generated random password for ${AI_AGENT_USER}: ${AI_AGENT_PASSWORD}"
+        fi
+        
         log_success "Loaded settings (AI Agent: ${AI_AGENT_USER})"
         return 0
     fi
@@ -156,6 +162,19 @@ collect_inputs() {
     echo -n "  AI Agent username [ai-agent]: "
     read AI_AGENT_USER
     AI_AGENT_USER=${AI_AGENT_USER:-ai-agent}
+    
+    echo ""
+    echo -e "  ${YELLOW}Password for AI agent (will be used for sudo)${NC}"
+    echo -n "  AI Agent password [random]: "
+    read -s AI_AGENT_PASSWORD
+    echo ""
+    
+    if [[ -z "$AI_AGENT_PASSWORD" ]]; then
+        # Generate random password if not provided
+        AI_AGENT_PASSWORD=$(openssl rand -base64 12)
+        log_warn "Generated random password for ${AI_AGENT_USER}: ${AI_AGENT_PASSWORD}"
+        log_warn "PLEASE SAVE THIS PASSWORD!"
+    fi
 
     echo ""
     log_success "Configuration collected"
@@ -349,8 +368,8 @@ setup_ai_agent() {
         useradd -m -s /bin/bash "${AI_AGENT_USER}"
         echo "${AI_AGENT_USER} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${AI_AGENT_USER}"
         chmod 440 "/etc/sudoers.d/${AI_AGENT_USER}"
-        # Set password for the user (same as root for convenience)
-        echo "${AI_AGENT_USER}:patatina" | chpasswd
+        # Set password for the user
+        echo "${AI_AGENT_USER}:${AI_AGENT_PASSWORD}" | chpasswd
         log_success "User ${AI_AGENT_USER} created with password"
     else
         log_success "User ${AI_AGENT_USER} already exists"
@@ -382,6 +401,12 @@ setup_ai_agent() {
 #-------------------------------------------------------------------------------
 save_config() {
     log_info "Saving configuration..."
+    
+    # Idempotency guard: Don't overwrite existing config with empty defaults
+    if [[ -f "${NHI_DATA}/config.yaml" ]] && [[ -z "${PROXMOX_TOKEN_ID}" ]]; then
+        log_warn "Config exists and no new credentials provided. Skipping config overwrite."
+        return 0
+    fi
     
     cat > "${NHI_DATA}/config.yaml" <<EOF
 # NHI-CORE Configuration
@@ -431,24 +456,35 @@ ai_agent:
   user: "${AI_AGENT_USER}"
 EOF
 
-    # Save secrets (encrypted with SOPS in future)
+    # Save secrets (encrypted with SOPS)
     mkdir -p "${NHI_DATA}/secrets/infrastructure"
     cat > "${NHI_DATA}/secrets/infrastructure/proxmox.yaml" <<EOF
 # Proxmox Credentials
-# TODO: Encrypt with sops
 proxmox_token: "${PROXMOX_TOKEN_SECRET}"
 proxmox_root_password: "${PROXMOX_ROOT_PASSWORD}"
 EOF
     chmod 600 "${NHI_DATA}/secrets/infrastructure/proxmox.yaml"
     
+    # Encrypt Proxmox secrets
+    if command -v sops &> /dev/null; then
+        log_info "Encrypting Proxmox secrets..."
+        (cd "${NHI_DATA}" && sops --encrypt --in-place secrets/infrastructure/proxmox.yaml)
+    fi
+
     if [[ -n "$GITHUB_TOKEN" ]]; then
         cat > "${NHI_DATA}/secrets/services/github.yaml" <<EOF
 github_token: "${GITHUB_TOKEN}"
 EOF
         chmod 600 "${NHI_DATA}/secrets/services/github.yaml"
+        
+        # Encrypt GitHub secrets
+        if command -v sops &> /dev/null; then
+             log_info "Encrypting GitHub secrets..."
+             (cd "${NHI_DATA}" && sops --encrypt --in-place secrets/services/github.yaml)
+        fi
     fi
     
-    log_success "Configuration saved"
+    log_success "Configuration saved and encrypted"
 }
 
 #-------------------------------------------------------------------------------
@@ -463,11 +499,12 @@ setup_repository() {
     if [[ ! -d "${NHI_HOME}/.git" ]]; then
         log_info "Cloning from ${TARGET_REPO}..."
         
-        # Ensure directory exists and is empty or cloneable
+        # Ensure directory exists and is empty
         if [[ -d "${NHI_HOME}" ]]; then
-           # If not empty and not git, warn? But we created it empty in setup_directories.
-           rm -rf "${NHI_HOME:?}"/* 2>/dev/null || true
+           log_warn "Cleaning existing directory ${NHI_HOME}..."
+           rm -rf "${NHI_HOME}"
         fi
+        mkdir -p "${NHI_HOME}"
         
         git clone "${TARGET_REPO}" "${NHI_HOME}"
         
@@ -610,6 +647,16 @@ print('Initial scan complete!')
 }
 
 #-------------------------------------------------------------------------------
+# Permission Fix (Finalize)
+#-------------------------------------------------------------------------------
+fix_permissions() {
+    log_info "Finalizing permissions..."
+    chown -R "${AI_AGENT_USER}:${AI_AGENT_USER}" "${NHI_HOME}"
+    chown -R "${AI_AGENT_USER}:${AI_AGENT_USER}" "${NHI_DATA}"
+    log_success "Permissions fixed"
+}
+
+#-------------------------------------------------------------------------------
 # API Service Setup (NEW in v1.1)
 #-------------------------------------------------------------------------------
 setup_api_service() {
@@ -675,13 +722,14 @@ main() {
     # Setup
     setup_directories
     install_dependencies
+    setup_ai_agent          # NEW: Create user FIRST (needed for permissions)
     setup_repository        # NEW: Clone code (Must be before python setup)
     setup_python
     setup_age_keys          # NEW: Age encryption
-    setup_ai_agent          # NEW: AI agent user
     save_config
     setup_ip_registry       # NEW: IP allocation
     setup_service_registry  # NEW: Self-registration
+    fix_permissions         # NEW: Ensure ai-agent owns everything
     
     # Install CLI
     log_info "Installing NHI CLI..."
