@@ -368,7 +368,7 @@ setup_ai_agent() {
     mkdir -p "${AI_HOME}/.agent/workflows"
     
     chown -R "${AI_AGENT_USER}:${AI_AGENT_USER}" "${AI_HOME}"
-    chown -R "${AI_AGENT_USER}:${AI_AGENT_USER}" "${NHI_DATA}/cache"  # Fix: Perms for cache
+    chown -R "${AI_AGENT_USER}:${AI_AGENT_USER}" "${NHI_DATA}"  # Global data ownership
     
     log_success "AI agent user configured"
     
