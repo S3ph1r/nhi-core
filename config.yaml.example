@@ -1,0 +1,83 @@
+# NHI-CORE Configuration Template
+# Copy to /var/lib/nhi/config.yaml and customize
+
+# Proxmox API Configuration
+proxmox:
+  host: "192.168.1.2"
+  port: 8006
+  node: "pve"
+  token_id: "root@pam!ai-scanner"
+  token_secret: "your-token-secret-here"
+  root_password: "your-proxmox-root-password"
+  verify_ssl: false
+
+# Age Encryption Keys (set by genesis.sh)
+age:
+  master_key: "/var/lib/nhi/age/master.key"
+  host_key: "/var/lib/nhi/age/host.key"
+  services_key: "/var/lib/nhi/age/services.key"
+
+# Context Generation
+context:
+  output_path: "/home/ai-agent/.cursorrules"
+  include_services: true
+  include_infrastructure: true
+
+# ============================================
+# BACKUP CONFIGURATION
+# ============================================
+backup:
+  # Master switch
+  enabled: false
+  
+  # Storage Configuration
+  storage:
+    primary:
+      type: null           # 'nfs' | 'local' | 's3'
+      # NFS Example:
+      # type: nfs
+      # host: 192.168.1.139
+      # path: /mnt/backup-proxmox
+      # proxmox_storage: backup-gaming-pc  # Proxmox storage ID
+      
+    offsite:
+      type: null           # 'gdrive' | 's3' | 'backblaze'
+      encrypt: true        # Always encrypt before upload
+      # Google Drive Example:
+      # type: gdrive
+      # folder: NHI-Backup
+      # rclone_remote: gdrive
+  
+  # Backup Policy
+  policy:
+    mode: core+infra       # 'core' | 'core+infra' | 'selective' | 'all'
+    include: []            # Services to include (for 'selective' mode)
+    exclude: []            # Services to always exclude
+    include_status:        # Only backup services with these statuses
+      - active
+      - development
+      - maintenance
+  
+  # Schedule
+  schedule:
+    enabled: false
+    daily: "03:00"         # Daily backup time (24h format)
+    weekly_full: "sun 03:00"  # Weekly full backup
+  
+  # Retention Policy
+  retention:
+    daily: 7               # Keep last 7 daily backups
+    weekly: 4              # Keep last 4 weekly backups
+    monthly: 6             # Keep last 6 monthly backups
+  
+  # Infrastructure services (always included in core+infra)
+  infrastructure:
+    - postgresql
+    - redis
+    - minio
+    - chromadb
+
+# Logging
+logging:
+  level: INFO              # DEBUG | INFO | WARNING | ERROR
+  file: "/var/log/nhi/nhi-core.log"
