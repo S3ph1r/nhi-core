@@ -22,8 +22,16 @@ import argparse
 import logging
 from pathlib import Path
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Resolve symlink and add NHI-CORE to path
+# When run as symlink from /usr/local/bin/nhi, __file__ resolves to the target
+script_path = Path(__file__).resolve()
+nhi_core_path = script_path.parent.parent  # cli/nhi.py -> cli -> nhi-core
+
+# Fallback to /opt/nhi-core if not found
+if not (nhi_core_path / 'core').exists():
+    nhi_core_path = Path('/opt/nhi-core')
+
+sys.path.insert(0, str(nhi_core_path))
 
 from core.backup import BackupManager, DependencyResolver
 
