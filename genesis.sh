@@ -452,6 +452,41 @@ EOF
 }
 
 #-------------------------------------------------------------------------------
+# Repository Setup (NEW: Fix missing code)
+#-------------------------------------------------------------------------------
+setup_repository() {
+    log_info "Setting up software repository..."
+    
+    # Default repo if not set
+    TARGET_REPO="${GITHUB_REPO:-https://github.com/S3ph1r/nhi-core.git}"
+    
+    if [[ ! -d "${NHI_HOME}/.git" ]]; then
+        log_info "Cloning from ${TARGET_REPO}..."
+        
+        # Ensure directory exists and is empty or cloneable
+        if [[ -d "${NHI_HOME}" ]]; then
+           # If not empty and not git, warn? But we created it empty in setup_directories.
+           rm -rf "${NHI_HOME:?}"/* 2>/dev/null || true
+        fi
+        
+        git clone "${TARGET_REPO}" "${NHI_HOME}"
+        
+        # Set ownership to ai-agent so it can pull updates
+        chown -R "${AI_AGENT_USER}:${AI_AGENT_USER}" "${NHI_HOME}"
+        
+        # Mark directory as safe for git (since we run as root sometimes but user owns it)
+        git config --system --add safe.directory "${NHI_HOME}"
+        
+        log_success "Repository cloned"
+    else
+        log_info "Repository already exists"
+        # Ensure clean state? No, respect existing state but fix perms
+        chown -R "${AI_AGENT_USER}:${AI_AGENT_USER}" "${NHI_HOME}"
+        git config --system --add safe.directory "${NHI_HOME}"
+    fi
+}
+
+#-------------------------------------------------------------------------------
 # Cron Setup
 #-------------------------------------------------------------------------------
 setup_cron() {
@@ -640,6 +675,7 @@ main() {
     # Setup
     setup_directories
     install_dependencies
+    setup_repository        # NEW: Clone code (Must be before python setup)
     setup_python
     setup_age_keys          # NEW: Age encryption
     setup_ai_agent          # NEW: AI agent user
