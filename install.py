@@ -83,7 +83,36 @@ def run_install(skip_scan: bool = False):
     else:
         logger.warning(f"Design System templates not found at {ds_src}")
     
-    # Step 4: Summary
+    # Step 4: Expose Documentation (New in v1.1)
+    logger.info("Exposing documentation to users...")
+    docs_src = os.path.join(os.path.dirname(__file__), 'docs')
+    
+    # Locate AI Agent home (fallback to /home/ai-agent if not found in environment)
+    # We should get this from config, but here we assume standard path or check genesis
+    # A safer bet is checking where we are running. 
+    # But usually ai-agent home is /home/ai-agent.
+    ai_home = '/home/ai-agent' 
+    docs_dest = os.path.join(ai_home, '_NHI')
+    
+    if os.path.exists(docs_src):
+        if not os.path.exists(docs_dest):
+             # check if ai_home exists
+             if os.path.exists(ai_home):
+                try:
+                    os.symlink(docs_src, docs_dest)
+                    logger.info(f"Created symlink: {docs_dest} -> {docs_src}")
+                    # Ensure agent owns the symlink (if running as root)
+                    shutil.chown(docs_dest, user='ai-agent', group='ai-agent')
+                except Exception as e:
+                    logger.error(f"Failed to create docs symlink: {e}")
+             else:
+                 logger.warning(f"AI Agent home not found at {ai_home}")
+        else:
+             logger.info(f"Documentation link already exists at {docs_dest}")
+    else:
+        logger.warning(f"Documentation source not found at {docs_src}")
+
+    # Step 5: Summary
     logger.info("")
     logger.info("=" * 50)
     logger.info("Installation complete!")
