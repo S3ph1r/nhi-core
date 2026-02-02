@@ -39,17 +39,10 @@ class ProxmoxScanner:
         # Try new v1.1 path first (YAML format)
         yaml_path = os.path.join(data_path, 'secrets', 'infrastructure', 'proxmox.yaml')
         if os.path.exists(yaml_path):
-            try:
-                sops = SOPSManager(data_path=data_path)
-                secrets = sops.decrypt_file(yaml_path)
-                if secrets and 'proxmox_token' in secrets:
-                    return secrets['proxmox_token'].strip()
-            except Exception:
-                # Fallback if decryption fails (e.g. sops not installed)
-                with open(yaml_path, 'r') as f:
-                    secrets = yaml.safe_load(f)
-                    if secrets and 'proxmox_token' in secrets:
-                        return secrets['proxmox_token'].strip()
+            sops = SOPSManager(data_path=data_path)
+            secrets = sops.decrypt_file(yaml_path)
+            if secrets and 'proxmox_token' in secrets:
+                return secrets['proxmox_token'].strip()
         
         # Fallback to legacy path (plain text)
         legacy_path = os.path.join(data_path, 'secrets', '.proxmox_token')

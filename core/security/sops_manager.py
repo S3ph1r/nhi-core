@@ -23,6 +23,15 @@ class SOPSManager:
         self.data_path = data_path
         self.secrets_path = os.path.join(data_path, 'secrets')
         self.sops_config = os.path.join(data_path, '.sops.yaml')
+        
+        # FIX: Ensure sops can find the key (even in cron)
+        age_key_path = os.path.join(data_path, 'age', 'master.key')
+        if os.path.exists(age_key_path):
+            if 'SOPS_AGE_KEY_FILE' not in os.environ:
+                 print(f"DEBUG: Injecting SOPS_AGE_KEY_FILE={age_key_path}")
+                 os.environ['SOPS_AGE_KEY_FILE'] = age_key_path
+            else:
+                 print(f"DEBUG: SOPS_AGE_KEY_FILE already set: {os.environ['SOPS_AGE_KEY_FILE']}")
     
     def _check_sops(self) -> bool:
         """Check if SOPS is available."""
@@ -76,7 +85,12 @@ class SOPSManager:
             '--decrypt', input_path
         ], capture_output=True, text=True, check=True)
         
-        return yaml.safe_load(result.stdout)
+        # Validation: If output still looks encrypted, something is wrong
+        output = result.stdout
+        if "ENC[AES256_GCM" in output:
+            raise RuntimeError("SOPS decryption failed (returned encrypted content)")
+            
+        return yaml.safe_load(output)
     
     def get_secret(self, key: str, file: str = "secrets.yaml") -> Optional[str]:
         """
