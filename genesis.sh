@@ -631,6 +631,9 @@ run_initial_scan() {
     source "${VENV_PATH}/bin/activate"
     cd "${NHI_HOME}"
     
+    # Export key for SOPS decryption
+    export SOPS_AGE_KEY_FILE="/var/lib/nhi/age/master.key"
+    
     python3 -c "
 from core.scanner import ProxmoxScanner
 from core.context import ContextGenerator
