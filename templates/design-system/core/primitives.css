@@ -1,0 +1,45 @@
+/* NHI Design System - Primitives */
+
+:root {
+  /* Colors - Derived from tokens.yaml */
+  --color-neura-500: #6366F1;
+  --color-obsidian-base: #0F1115;
+  --color-obsidian-surface: #18181B;
+
+  /* Spacing */
+  --space-md: 16px;
+  --space-lg: 24px;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  background-color: var(--color-obsidian-base);
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
+}
+
+.nhi-card {
+  background: var(--color-obsidian-surface);
+  border: 1px solid #27272A;
+  border-radius: 8px;
+  padding: var(--space-md);
+}
+
+.nhi-btn-primary {
+  background: var(--color-neura-500);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.nhi-btn-primary:hover {
+  filter: brightness(1.1);
+}

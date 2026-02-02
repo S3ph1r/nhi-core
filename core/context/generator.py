@@ -2,6 +2,7 @@
 Context Generator - AI Context File Generation
 
 Produces .cursorrules (Markdown) and system-map.json for AI assistants.
+UPDATED v1.1: Generates dynamic .cursorrules that references JSON SSOT.
 """
 
 import os
@@ -14,7 +15,6 @@ from typing import Dict, List, Optional
 class ContextGenerator:
     """Generates AI context files from infrastructure data."""
     
-    # Port allocation standards
     PORT_STANDARDS = {
         '80, 443': 'Reverse Proxy (Traefik/Nginx)',
         '5432': 'PostgreSQL (Shared DB)',
@@ -25,259 +25,92 @@ class ContextGenerator:
     }
     
     def __init__(self, infrastructure: Dict = None, data_path: str = "/var/lib/nhi"):
-        """
-        Initialize generator.
-        
-        Args:
-            infrastructure: Pre-scanned infrastructure data (optional)
-            data_path: Base path for NHI data
-        """
         self.data_path = data_path
         self.context_path = os.path.join(data_path, 'context')
         self.infrastructure = infrastructure or self._load_infrastructure()
     
     def _load_infrastructure(self) -> Dict:
-        """Load infrastructure from saved file."""
         infra_path = os.path.join(self.data_path, 'infrastructure.yaml')
-        
         if os.path.exists(infra_path):
             with open(infra_path, 'r') as f:
                 return yaml.safe_load(f)
-        
         return {'resources': [], 'nodes': [], 'storage': [], 'network': {}}
     
     def _load_config(self) -> Dict:
-        """Load NHI configuration."""
         config_path = os.path.join(self.data_path, 'config.yaml')
-        
         if os.path.exists(config_path):
             with open(config_path, 'r') as f:
                 return yaml.safe_load(f)
-        
         return {}
     
     def generate_cursorrules(self) -> str:
         """
         Generate .cursorrules Markdown content.
-        
-        Returns:
-            Markdown string for .cursorrules
+        Uses the v1.1 Dynamic SSOT template.
         """
-        config = self._load_config()
-        resources = self.infrastructure.get('resources', [])
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M')
-        
-        # Build infrastructure table
-        infra_table = self._build_infrastructure_table(resources)
-        
-        # Build services table (NEW in v1.1)
-        services = self._load_services()
-        services_table = self._build_services_table(services)
-        
-        # Build port standards table
-        port_table = "\n".join([
-            f"| {ports} | {service} |"
-            for ports, service in self.PORT_STANDARDS.items()
-        ])
         
         content = f"""# 🧠 NHI Operational Rules
 
-> **Auto-generated:** {timestamp}
-> **Context:** Adaptive Environment
+> **Philosophy**: Logic here, Data elsewhere.
+> **Auto-generated**: {timestamp}
 
 ---
 
-## 0. Environment Context (Adaptive)
-⚠️ **Agent: Verify your runtime environment before executing commands.**
+## 1. 🗺️ Context & Data Sources (Dynamic SSOT)
+Instead of hardcoding IPs and ports, **ALWAYS** refer to the following files:
 
-**Scenario A: Windows 11 / WSL2 (Common)**
-- **Shell:** PowerShell or WSL Bash
-- **Access:** `wsl ssh root@192.168.1.2 ...`
-- **Mounts:** `M:\\` or `Z:\\`
+| Type | Path | Content |
+|------|------|---------|
+| **Infrastructure** | `n:/nhi-data/context/system-map.json` | **SSOT**. Nodes, LXC IPs, Ports, Resources. |
+| **Config/Paths** | `n:/nhi-data/nhi/config.yaml` | Core paths (`/var/lib/nhi`), Backups, Auth. |
+| **Methodology** | `_NHI/NHI_METHODOLOGY.md` | *Reference* for operational procedures. |
+| **Project Docs** | `Z:\\...\\Projects\\<project>\\project_manifest.md` | Specific project architecture. |
 
-**Scenario B: Native Linux / MacOS**
-- **Shell:** Native Bash/Zsh
-- **Access:** Direct `ssh root@192.168.1.2 ...`
-
-**Infrastructure Targets:**
-- **Proxmox Host:** `192.168.1.2` (User `root`)
-- **Auth:** Key-based (Ensure your public key is in `authorized_keys`)
-
-**Command Strategy:**
-1. Check `GLOBAL_CONTEXT.md` for target IP.
-2. Select appropriate bridge (`wsl ssh` vs `ssh`).
-3. For LXC operations, prefer `pct exec` from Host over direct SSH if unconfigured.
+> **RULE**: Before any operation involving an IP or Port, read `system-map.json`. Do NOT guess.
 
 ---
 
-## 1. SSOT (Single Source of Truth)
-⚠️ **NEVER guess IPs, ports, or service names.**
-
-| Document | Purpose | Path |
-|----------|---------|------|
-| **GLOBAL_CONTEXT.md** | Logical architecture | Root of Projects |
-| **NHI_METHODOLOGY.md** | Full operational rules | `_NHI/` |
-
-**Before ANY remote operation:** Consult GLOBAL_CONTEXT.md first.
+## 2. 🛡️ Verification Protocol (STRICT)
+When requested to verify, test, or check logs:
+1.  **NEVER ASSUME SUCCESS**: Exit code 0 is the only truth.
+2.  **SHOW YOUR WORK**: Output the raw command result to the user.
+3.  **NO SILENT FAILURE**: Report every error immediately.
 
 ---
 
-## 2. Project Structure
-> **"Un progetto = Un LXC = Una cartella locale"**
-
-| Location | Contains | Purpose |
-|----------|----------|---------|
-| `Z:\\...\\Projects\\<project>\\` | **DOCS ONLY** | `project_manifest.md`, architecture |
-| `Y:\\`, `W:\\`, `X:\\` (RaiDrive) | **LIVE CODE** | Edit, debug, execution |
+## 3. 🔐 SSH & Credentials
+- **User**: `ai-agent` (defined in `config.yaml`).
+- **Auth**: Key-based only.
+- **Secrets**: NEVER reading/writing plaintext passwords. Use Vault (`/var/lib/nhi/secrets/` or `nhi vault get`).
 
 ---
 
-## 3. SSH Rules
-- **User:** `ai-agent` (LXC), `root` (Proxmox Host)
-- **Method:** Key-based auth only (WSL Key -> Proxmox Authorized Keys)
-- **Zero-Touch:** Use `pct exec` for bootstrapping new containers until standard SSH is ready.
+## 4. 🚀 Development Workflow
+1.  **Read Context**: Load `system-map.json` to know the target IP.
+2.  **Check Status**: Verify target LXC is `running` in `system-map.json`.
+3.  **Connect**: SSH into the target IP using `ai-agent`.
+4.  **Deploy/Edit**: Work on mapped drives (`W:\\` etc) or via SSH.
+5.  **Verify**: Apply Protocol #2.
 
 ---
 
-## 4. Credentials
-- **Vault:** `_NHI/ansible/secrets.vault.yml`
-- **If you see plaintext passwords:** STOP. Notify user.
+## 5. ⚠️ Emergency Fallback
+If `system-map.json` is unreadable or missing:
+1.  **STOP**.
+2.  Notify the user.
+3.  Do NOT revert to hardcoded guesses.
 
 ---
-
-## 5. Development Workflow
-1. **Context:** Read `GLOBAL_CONTEXT.md` in root
-2. **Docs:** Check `Z:\\<project>\\project_manifest.md`
-3. **Code:** Switch to mapped LXC drive (`W:\\`, etc.)
-4. **Deploy:** SSH to restart services
-5. **Verify:** Check logs (`journalctl`, `docker logs`)
-6. **Update:** Reflect changes in `Z:\\` docs
-
----
-
-## 6. Port Allocation Standards
-
-| Porte | Servizio |
-|-------|----------|
-{port_table}
-
----
-
-## 7. Infrastructure Map
-
-{infra_table}
-
----
-
-## 8. Deployed Services Registry
-
-{services_table}
-
----
-
-## 9. Credentials Access
-
-- **Vault Location:** `/var/lib/nhi/secrets/`
-- **Get credential:** `nhi vault get <path>` (e.g., `nhi vault get services.postgresql.password`)
-- **Keys:** Master Key for disaster recovery, Host Key for infrastructure, Services Key for apps
-- **NEVER hardcode passwords in code**
-
----
-
-## 10. Deployment Checklist
-
-Before completing ANY deployment, ensure:
-- [ ] LXC/VM created and running
-- [ ] Service installed and healthy
-- [ ] Ports configured and accessible
-- [ ] Manifest created: `nhi manifest create <service>`
-- [ ] Context regenerated: runs automatically every hour
-
----
-
-
-# 11. Verification Protocol (STRICT)
-# 🛡️ Anti-Hallucination Rules
-# Quando l'utente richiede una verifica, un test o un controllo di log:
-# 1.  **NEVER ASSUME SUCCESS**: Non dare mai per scontato che un comando abbia avuto successo se non vedi un exit code 0 e un output esplicito.
-# 2.  **SHOW YOUR WORK**: Non riassumere soltanto ("I file sono identici"). DEVI mostrare all'utente l'output grezzo (raw output) del comando di verifica prima di trarre conclusioni.
-# 3.  **NO SILENT FAILURE**: Se un tool restituisce un errore (anche di sintassi shell), FERMATI e riportalo. Non provare a interpretare cosa "sarebbe dovuto succedere".
-
----
-
-*Auto-generated by NHI-CORE v1.1 - {timestamp}*
+*Generated by NHI-CORE v1.1 Context Generator*
 """
         return content
-    
-    def _load_services(self) -> List[Dict]:
-        """Load service manifests from registry."""
-        services_path = os.path.join(self.data_path, 'registry', 'services')
-        services = []
-        
-        if os.path.exists(services_path):
-            for manifest_file in os.listdir(services_path):
-                if manifest_file.endswith('.yaml'):
-                    manifest_path = os.path.join(services_path, manifest_file)
-                    with open(manifest_path, 'r') as f:
-                        data = yaml.safe_load(f)
-                        if data:
-                            services.append(data)
-        
-        return services
-    
-    def _build_services_table(self, services: List[Dict]) -> str:
-        """Build markdown table from service manifests."""
-        if not services:
-            return "| Service | LXC | IP | Ports | Status |\n|---------|-----|----|-------|--------|\n| *No services registered* | - | - | - | - |"
-        
-        lines = ["| Service | LXC | IP | Ports | Status |", "|---------|-----|----|-------|--------|"]
-        
-        for svc in sorted(services, key=lambda x: x.get('vmid', 0)):
-            name = svc.get('name', 'Unknown')
-            vmid = svc.get('vmid', 'N/A')
-            ip = svc.get('network', {}).get('ip', 'N/A')
-            ports = ', '.join([str(p.get('port', '')) for p in svc.get('network', {}).get('ports', [])])
-            if not ports:
-                ports = '-'
-            
-            # Check checklist completion
-            checklist = svc.get('checklist', {})
-            all_done = all(checklist.values()) if checklist else False
-            status = '✅' if all_done else '⚠️'
-            
-            lines.append(f"| {name} | {vmid} | {ip} | {ports} | {status} |")
-        
-        return "\n".join(lines)
-    
-    def _build_infrastructure_table(self, resources: List[Dict]) -> str:
-        """Build markdown table from resources."""
-        if not resources:
-            return "| IP | Service | Type |\n|----|---------|------|\n| *No resources discovered* | - | - |"
-        
-        lines = ["| IP | Service | Type | Status |", "|----|---------|----|--------|"]
-        
-        for res in sorted(resources, key=lambda x: x.get('vmid', 0)):
-            ip = res.get('ip', 'N/A') or 'N/A'
-            name = res.get('name', 'Unknown')
-            res_type = res.get('type', '').upper()
-            status = res.get('status', 'unknown')
-            status_emoji = '🟢' if status == 'running' else '🔴'
-            
-            lines.append(f"| {ip} | {name} | {res_type} | {status_emoji} {status} |")
-        
-        return "\n".join(lines)
-    
+
     def generate_system_map(self) -> Dict:
-        """
-        Generate system-map.json content.
-        
-        Returns:
-            Dictionary for JSON serialization
-        """
         config = self._load_config()
         
         system_map = {
-            'version': '1.0',
+            'version': '1.1',
             'generated': datetime.now().isoformat(),
             'proxmox': {
                 'host': config.get('proxmox', {}).get('host', 'unknown'),
@@ -289,7 +122,6 @@ Before completing ANY deployment, ensure:
             'network': self.infrastructure.get('network', {}),
             'port_standards': self.PORT_STANDARDS
         }
-        
         return system_map
     
     def generate(self):

@@ -8,6 +8,7 @@ Called by genesis.sh after dependencies are installed.
 
 import os
 import sys
+import shutil
 import argparse
 import logging
 
@@ -54,7 +55,35 @@ def run_install(skip_scan: bool = False):
     logger.info(f"Created: {paths['cursorrules']}")
     logger.info(f"Created: {paths['system_map']}")
     
-    # Step 3: Summary
+    logger.info(f"Created: {paths['system_map']}")
+
+    # Step 3: Deploy Design System (New in v1.1)
+    logger.info("Deploying NHI Design System (v1.1)...")
+    ds_src = os.path.join(os.path.dirname(__file__), 'templates', 'design-system')
+    ds_dest = '/var/lib/nhi/design-system'
+    
+    if os.path.exists(ds_src):
+        if os.path.exists(ds_dest):
+            shutil.rmtree(ds_dest)
+        shutil.copytree(ds_src, ds_dest)
+        logger.info(f"Deployed Design System to {ds_dest}")
+    else:
+        logger.warning(f"Design System templates not found at {ds_src}")
+    
+    # Step 3: Deploy Design System (New in v1.1)
+    logger.info("Deploying NHI Design System (v1.1)...")
+    ds_src = os.path.join(os.path.dirname(__file__), 'templates', 'design-system')
+    ds_dest = '/var/lib/nhi/design-system'
+    
+    if os.path.exists(ds_src):
+        if os.path.exists(ds_dest):
+            shutil.rmtree(ds_dest)
+        shutil.copytree(ds_src, ds_dest)
+        logger.info(f"Deployed Design System to {ds_dest}")
+    else:
+        logger.warning(f"Design System templates not found at {ds_src}")
+    
+    # Step 4: Summary
     logger.info("")
     logger.info("=" * 50)
     logger.info("Installation complete!")

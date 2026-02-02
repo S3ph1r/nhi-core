@@ -1,0 +1,36 @@
+schema: "nhids/v1"
+type: "tokens"
+version: "1.0.0"
+
+palette:
+  neura:  # Primary Brand (Electric Indigo/Blue)
+    50: "#EEF2FF"
+    100: "#E0E7FF"
+    500: "#6366F1"
+    700: "#4338CA"
+    900: "#312E81"
+  
+  obsidian: # Backgrounds (Deep Grey/Black)
+    black: "#050505"
+    base: "#0F1115"
+    surface: "#18181B"
+    overlay: "#27272A"
+
+  system: # Functional
+    success: "#10B981"
+    warning: "#F59E0B"
+    error: "#EF4444"
+    info: "#3B82F6"
+
+spacing:
+  base: 4px
+  xs: "4px"  # 1 unit
+  sm: "8px"  # 2 units
+  md: "16px" # 4 units
+  lg: "24px" # 6 units
+  xl: "32px" # 8 units
+
+typography:
+  font-family:
+    sans: "'Inter', system-ui, sans-serif"
+    mono: "'JetBrains Mono', monospace"

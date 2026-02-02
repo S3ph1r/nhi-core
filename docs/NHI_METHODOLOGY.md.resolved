@@ -63,7 +63,7 @@ project-name/
 | **Docker container** | `project-service` | `nhi-dashboard-api` |
 | **Python packages** | `snake_case` | `nhi_core`, `service_registry` |
 | **API endpoints** | `/api/v1/resource` | `/api/v1/services` |
-| **Config files** | `lowercase.yaml` | `config.yaml`, `secrets.yaml` |
+| **Config files** | `lowercase.yaml` | [config.yaml](file:///N:/nhi-data/config.yaml), `secrets.yaml` |
 
 ### 2.3 Port Allocation
 
@@ -174,7 +174,7 @@ When user brings a design from external LLM:
 | Document | Location | Purpose |
 |----------|----------|---------|
 | `project_manifest.md` | Project root | NHI integration metadata |
-| `README.md` | Project root | Getting started guide |
+| [README.md](file:///C:/Users/Roberto/.gemini/antigravity/brain/935e8884-9cda-492f-b3c5-fed3cf3ce783/temp_nhi_core/README.md) | Project root | Getting started guide |
 | `architecture.md` | `/docs/` | Technical decisions |
 | API docs | Inline or `/docs/api/` | Endpoint documentation |
 
@@ -304,13 +304,13 @@ services:
 
 ### 9.1 What AI Agents Read
 
-1. **`.cursorrules`** - Compact operational rules
+1. **[.cursorrules](file:///n:/.cursorrules)** - Compact operational rules
 2. **Service registry** - Available services and IPs
 3. **Project manifests** - Project-specific context
 
 ### 9.2 What AI Agents Should Do
 
-- Consult `.cursorrules` before ANY remote operation
+- Consult [.cursorrules](file:///n:/.cursorrules) before ANY remote operation
 - Never guess IPs, ports, or service names
 - Follow workflows in `.agent/workflows/`
 - Create manifests for new services
