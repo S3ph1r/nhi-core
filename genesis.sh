@@ -125,7 +125,7 @@ collect_inputs() {
     
     echo ""
     echo -e "  ${YELLOW}Token Secret (the UUID shown when token was created)${NC}"
-    echo -e "  ${YELLOW}Example: bd523352-3956-4045-a07e-339acf0163d3${NC}"
+    echo -e "  ${YELLOW}Example: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx${NC}"
     echo -n "  API Token Secret: "
     read -s PROXMOX_TOKEN_SECRET
     echo ""

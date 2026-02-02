@@ -32,7 +32,7 @@ Since you cannot SSH into the container, use Proxmox's `pct exec` command to fix
 ```bash
 # From Proxmox host (192.168.1.2)
 VMID=<container_id>
-PASSWORD="patatina"
+PASSWORD="your-password"
 
 # Fix SSH config to allow root password login
 pct exec $VMID -- sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
@@ -50,7 +50,7 @@ ssh root@<container_ip>
 
 VMID=$1
 HOST="192.168.1.2"
-PASS="patatina"
+PASS="your-password"
 
 if [ -z "$VMID" ]; then
     echo "Usage: $0 <VMID>"
