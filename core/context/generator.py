@@ -83,7 +83,30 @@ class ContextGenerator:
         content = f"""# 🧠 NHI Operational Rules
 
 > **Auto-generated:** {timestamp}
-> **Full Methodology:** `_NHI/NHI_METHODOLOGY.md`
+> **Context:** Adaptive Environment
+
+---
+
+## 0. Environment Context (Adaptive)
+⚠️ **Agent: Verify your runtime environment before executing commands.**
+
+**Scenario A: Windows 11 / WSL2 (Common)**
+- **Shell:** PowerShell or WSL Bash
+- **Access:** `wsl ssh root@192.168.1.2 ...`
+- **Mounts:** `M:\\` or `Z:\\`
+
+**Scenario B: Native Linux / MacOS**
+- **Shell:** Native Bash/Zsh
+- **Access:** Direct `ssh root@192.168.1.2 ...`
+
+**Infrastructure Targets:**
+- **Proxmox Host:** `192.168.1.2` (User `root`)
+- **Auth:** Key-based (Ensure your public key is in `authorized_keys`)
+
+**Command Strategy:**
+1. Check `GLOBAL_CONTEXT.md` for target IP.
+2. Select appropriate bridge (`wsl ssh` vs `ssh`).
+3. For LXC operations, prefer `pct exec` from Host over direct SSH if unconfigured.
 
 ---
 
@@ -110,12 +133,9 @@ class ContextGenerator:
 ---
 
 ## 3. SSH Rules
-- **User:** `ai-agent` (everywhere)
-- **Method:** Key-based auth only
-- **Pattern:**
-  ```bash
-  ssh ai-agent@<IP from GLOBAL_CONTEXT> "command"
-  ```
+- **User:** `ai-agent` (LXC), `root` (Proxmox Host)
+- **Method:** Key-based auth only (WSL Key -> Proxmox Authorized Keys)
+- **Zero-Touch:** Use `pct exec` for bootstrapping new containers until standard SSH is ready.
 
 ---
 
@@ -172,6 +192,16 @@ Before completing ANY deployment, ensure:
 - [ ] Ports configured and accessible
 - [ ] Manifest created: `nhi manifest create <service>`
 - [ ] Context regenerated: runs automatically every hour
+
+---
+
+
+# 11. Verification Protocol (STRICT)
+# 🛡️ Anti-Hallucination Rules
+# Quando l'utente richiede una verifica, un test o un controllo di log:
+# 1.  **NEVER ASSUME SUCCESS**: Non dare mai per scontato che un comando abbia avuto successo se non vedi un exit code 0 e un output esplicito.
+# 2.  **SHOW YOUR WORK**: Non riassumere soltanto ("I file sono identici"). DEVI mostrare all'utente l'output grezzo (raw output) del comando di verifica prima di trarre conclusioni.
+# 3.  **NO SILENT FAILURE**: Se un tool restituisce un errore (anche di sintassi shell), FERMATI e riportalo. Non provare a interpretare cosa "sarebbe dovuto succedere".
 
 ---
 
