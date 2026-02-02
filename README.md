@@ -6,6 +6,17 @@ Transforms a vanilla Ubuntu VM into a documented, self-aware Control Plane for P
 
 ## Quick Start
 
+### 👶 Humans (First Time Setup)
+Start here if you have a fresh Proxmox server:
+👉 **[Getting Started Guide](docs/GETTING_STARTED.md)**
+
+### 🤖 AI Agents (Zero-Touch Bootstrap)
+If you are an AI Agent, read this protocol:
+👉 **[Agent Protocol](docs/AGENTS.md)**
+
+---
+
+### Manual Install (Legacy)
 ```bash
 # On a fresh Ubuntu 22.04/24.04 VM
 curl -sL https://raw.githubusercontent.com/S3ph1r/nhi-core/main/genesis.sh | sudo bash
