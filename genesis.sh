@@ -164,6 +164,12 @@ collect_inputs() {
     AI_AGENT_USER=${AI_AGENT_USER:-ai-agent}
     
     echo ""
+    echo -e "  ${YELLOW}Optional: Windows SSH Public Key (for direct access)${NC}"
+    echo -e "  ${YELLOW}Leave empty to skip.${NC}"
+    echo -n "  SSH Public Key (starts with ssh-ed25519 or ssh-rsa): "
+    read WINDOWS_SSH_KEY
+    
+    echo ""
     echo -e "  ${YELLOW}Password for AI agent (will be used for sudo)${NC}"
     echo -n "  AI Agent password [random]: "
     read -s AI_AGENT_PASSWORD
@@ -391,7 +397,19 @@ setup_ai_agent() {
     mkdir -p "${AI_HOME}/.ssh"
     chmod 700 "${AI_HOME}/.ssh"
     
-    # Create symlinks for AI access
+    # Inject Windows SSH Key if provided
+    if [[ -n "$WINDOWS_SSH_KEY" ]]; then
+        echo "$WINDOWS_SSH_KEY" >> "${AI_HOME}/.ssh/authorized_keys"
+        chmod 600 "${AI_HOME}/.ssh/authorized_keys"
+        chown "${AI_AGENT_USER}:${AI_AGENT_USER}" "${AI_HOME}/.ssh/authorized_keys"
+        log_success "Windows SSH Key injected"
+    else
+        log_warn "No SSH Key provided. Password authentication required for initial access."
+        echo ""
+        log_warn "📝 Add your Windows SSH public key manually to: ${AI_HOME}/.ssh/authorized_keys"
+        echo ""
+    fi
+
     ln -sf "${NHI_DATA}" "${AI_HOME}/nhi-data"
     ln -sf "${NHI_DATA}/context/.cursorrules" "${AI_HOME}/.cursorrules"
     mkdir -p "${AI_HOME}/projects"
@@ -401,10 +419,6 @@ setup_ai_agent() {
     chown -R "${AI_AGENT_USER}:${AI_AGENT_USER}" "${NHI_DATA}"  # Global data ownership
     
     log_success "AI agent user configured"
-    
-    echo ""
-    log_warn "📝 Add your Windows SSH public key to: ${AI_HOME}/.ssh/authorized_keys"
-    echo ""
 }
 
 #-------------------------------------------------------------------------------
