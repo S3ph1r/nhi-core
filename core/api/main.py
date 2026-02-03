@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from core.api.routers import system, backup, projects
+from core.api.routers import system, backup, projects, design_system
 
 app = FastAPI(
     title="NHI Brain API",
@@ -21,6 +21,7 @@ app.add_middleware(
 app.include_router(system.router, prefix="/system", tags=["System"])
 app.include_router(backup.router, prefix="/backup", tags=["Backup"])
 app.include_router(projects.router, prefix="/projects", tags=["Projects"])
+app.include_router(design_system.router, prefix="/design-system", tags=["Design System"])
 
 @app.get("/")
 async def root():
