@@ -264,7 +264,7 @@ setup_python() {
     source "${VENV_PATH}/bin/activate"
     
     pip install --quiet --upgrade pip
-    pip install --quiet proxmoxer PyYAML requests jsonschema fastapi uvicorn
+    pip install --quiet proxmoxer PyYAML requests jsonschema fastapi uvicorn psutil
     
     log_success "Python environment ready"
 }
