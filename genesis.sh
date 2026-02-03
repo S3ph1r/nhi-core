@@ -307,15 +307,17 @@ setup_age_keys() {
         while true; do
             # Allow read to fail (EOF)
             read -p "Type 'I HAVE SAVED THE KEY' to continue: " confirmation || true
+            
             if [[ "$confirmation" == "I HAVE SAVED THE KEY" ]]; then
                 log_success "Master key backup confirmed"
                 break
-                    # But wait, answers.txt HAS the string.
-                    # If read fails BUT populates variable (partial read?), we check variable.
-                    # If variable matches, we break.
-                    if [[ "$confirmation" == "I HAVE SAVED THE KEY" ]]; then break; fi
-                    log_error "Aborting: Master key not confirmed."
-                    exit 1
+            else
+                log_warn "Please type exactly: I HAVE SAVED THE KEY"
+                
+                # Check if we hit EOF (empty variable)
+                if [[ -z "$confirmation" ]]; then
+                     log_error "Aborting: Master key not confirmed (EOF detected)."
+                     exit 1
                 fi
             fi
         done
