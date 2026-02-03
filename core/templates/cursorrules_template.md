@@ -8,7 +8,7 @@
 # 🛑 CRITICAL PROTOCOL (READ FIRST)
 
 **PREREQUISITE**: Before ANY 'Planning' or 'Execution' phase, you **MUST**:
-1.  **READ** `_NHI/NHI_STANDARDS_CHECKLIST.md`.
+1.  **READ** `/opt/nhi-core/docs/NHI_STANDARDS_CHECKLIST.md`.
 2.  **INCLUDE** a "Pre-flight Check" item in your `task.md`.
 3.  **ABORT** if you cannot verify compliance with NHI Standards.
 
@@ -21,16 +21,36 @@ Instead of hardcoding IPs and ports, **ALWAYS** refer to the following files:
 
 | Type | Path | Content |
 |------|------|---------|
-| **Infrastructure** | `n:/nhi-data/context/system-map.json` | **SSOT**. Nodes, LXC IPs, Ports, Resources. |
-| **Config/Paths** | `n:/nhi-data/nhi/config.yaml` | Core paths (`/var/lib/nhi`), Backups, Auth. |
-| **Methodology** | `_NHI/NHI_METHODOLOGY.md` | **MANDATORY RULES**, not just reference. |
-| **Project Docs** | `Z:\...\Projects\<project>\project_manifest.md` | Specific project architecture. |
+| **Infrastructure** | `/var/lib/nhi/context/system-map.json` | **SSOT**. Nodes, LXC IPs, Ports, Resources. |
+| **Config/Paths** | `/var/lib/nhi/config.yaml` | Core paths, Backups, Auth. |
+| **Methodology** | `/opt/nhi-core/docs/NHI_METHODOLOGY.md` | **MANDATORY RULES**, not just reference. |
+| **Projects Root** | `/home/ai-agent/projects/` | All user projects. Each is a separate Git repo. |
+| **Project Docs** | `/home/ai-agent/projects/<project>/docs/` | Project-specific documentation, manifests, manuals. |
 
 > **RULE**: Before any operation involving an IP or Port, read `system-map.json`. Do NOT guess.
 
 ---
 
-## 2. 🛡️ Verification Protocol (STRICT)
+## 2. 📁 Project Structure
+Each project in `/home/ai-agent/projects/<project>/` MUST follow:
+
+```
+<project>/
+├── docs/
+│   ├── README.md              # Project overview
+│   ├── architecture.md        # Technical design
+│   └── user_manual.md         # End-user documentation (if applicable)
+├── src/                       # Source code
+├── tests/                     # Test files
+├── project_manifest.yaml      # NHI integration metadata
+└── .git/                      # Independent Git repository
+```
+
+> **TO FIND PROJECT DOCS**: Look in `/home/ai-agent/projects/<project>/docs/`
+
+---
+
+## 3. 🛡️ Verification Protocol (STRICT)
 When requested to verify, test, or check logs:
 1.  **NEVER ASSUME SUCCESS**: Exit code 0 is the only truth.
 2.  **SHOW YOUR WORK**: Output the raw command result to the user.
@@ -38,27 +58,27 @@ When requested to verify, test, or check logs:
 
 ---
 
-## 3. 🔐 SSH & Credentials
+## 4. 🔐 SSH & Credentials
 - **User**: `ai-agent` (defined in `config.yaml`).
 - **Auth**: Key-based only.
 - **Secrets**: 
     - **NEVER** output/log plaintext passwords. 
     - **ALWAYS** use Age/SOPS vault (`/var/lib/nhi/secrets/`).
-    - **MUST** generate secrets mostly on the fly and encrypt immediately.
+    - **MUST** generate secrets on the fly and encrypt immediately.
 
 ---
 
-## 4. 🚀 Development Workflow
+## 5. 🚀 Development Workflow
 1.  **PRE-FLIGHT**: verify `task.md` checklist against `NHI_STANDARDS_CHECKLIST.md`.
 2.  **Read Context**: Load `system-map.json` to know the target IP.
 3.  **Check Status**: Verify target LXC is `running` in `system-map.json`.
 4.  **Connect**: SSH into the target IP using `ai-agent`.
-5.  **Deploy/Edit**: Work on mapped drives (`W:\` etc) or via SSH.
-6.  **Verify**: Apply Protocol #2.
+5.  **Deploy/Edit**: Work in `/home/ai-agent/projects/<project>/` or via SSH.
+6.  **Verify**: Apply Protocol #3.
 
 ---
 
-## 5. ⚠️ Emergency Fallback
+## 6. ⚠️ Emergency Fallback
 If `system-map.json` is unreadable or missing:
 1.  **STOP**.
 2.  Notify the user.

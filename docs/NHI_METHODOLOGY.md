@@ -34,6 +34,23 @@
 
 ## 2. Project Structure
 
+### 2.0 Project Location
+
+All user projects MUST be stored in:
+
+```
+/home/ai-agent/projects/
+├── project-alpha/          # Each project is a folder
+├── project-beta/
+└── nhi-dashboard/
+```
+
+**Key Rules:**
+- Each project is an **independent Git repository**
+- Project docs live in `<project>/docs/`
+- Project manifest registered in `/var/lib/nhi/registry/services/<project>.yaml`
+- NHI-CORE itself lives in `/opt/nhi-core` (NOT in projects/)
+
 ### 2.1 Standard Project Layout
 
 ```
@@ -42,7 +59,8 @@ project-name/
 │   └── workflows/           # Agent-specific workflows
 ├── docs/
 │   ├── README.md           # Project overview
-│   └── architecture.md     # Technical architecture
+│   ├── architecture.md     # Technical architecture
+│   └── user_manual.md      # End-user documentation
 ├── src/                    # Source code
 │   ├── api/               # API endpoints
 │   ├── core/              # Business logic
@@ -51,9 +69,10 @@ project-name/
 ├── docker/
 │   ├── Dockerfile         # Container definition
 │   └── docker-compose.yaml
-├── project_manifest.md     # NHI project manifest
+├── project_manifest.yaml   # NHI project manifest
 └── .env.example           # Environment template (NO secrets!)
 ```
+
 
 ### 2.2 Naming Conventions
 

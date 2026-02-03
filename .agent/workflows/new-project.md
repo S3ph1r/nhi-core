@@ -8,9 +8,9 @@ This workflow guides you through creating a new project that follows NHI standar
 
 ## Prerequisites
 
-- [ ] Read `nhi-data/docs/NHI_METHODOLOGY.md`
+- [ ] Read `/opt/nhi-core/docs/NHI_METHODOLOGY.md`
 - [ ] Know the project purpose and requirements
-- [ ] Have target LXC ID and IP allocated
+- [ ] (Optional) Have target LXC ID and IP allocated if deploying
 
 ## Step 1: Gather Requirements
 
@@ -24,13 +24,16 @@ Ask the user:
 ## Step 2: Create Project Structure
 
 ```bash
-# Create directories
-mkdir -p <project-name>/{src,tests,docs,docker}
-mkdir -p <project-name>/.agent/workflows
+PROJECT_NAME="<project-name>"
+PROJECT_DIR="/home/ai-agent/projects/${PROJECT_NAME}"
 
-# Copy templates
-cp nhi-data/templates/project/* <project-name>/
-cp nhi-data/templates/service-manifest.yaml <project-name>/service-manifest.yaml
+# Create directories
+mkdir -p ${PROJECT_DIR}/{src,tests,docs,docker,.agent/workflows}
+cd ${PROJECT_DIR}
+
+# Create essential docs
+touch docs/README.md docs/architecture.md docs/user_manual.md
+touch project_manifest.yaml
 ```
 
 ## Step 3: Initialize Project Manifest
