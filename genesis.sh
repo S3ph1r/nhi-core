@@ -556,7 +556,7 @@ setup_repository() {
 setup_cron() {
     log_info "Setting up automatic updates..."
     
-    CRON_CMD="0 * * * * root ${VENV_PATH}/bin/python ${NHI_HOME}/core/context/updater.py >> ${NHI_LOG}/cron.log 2>&1"
+    CRON_CMD="0 * * * * root ${VENV_PATH}/bin/python ${NHI_HOME}/core/context/updater.py"
     
     echo "${CRON_CMD}" > /etc/cron.d/nhi-core
     chmod 644 /etc/cron.d/nhi-core

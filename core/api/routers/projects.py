@@ -19,8 +19,8 @@ async def list_projects():
     # Simple Mock for dev if path doesn't exist
     if not os.path.exists(REGISTRY_PATH):
         return [
-            {"name": "nhi-core", "type": "lxc", "status": "active", "ip": "192.168.1.117"},
-            {"name": "warroom", "type": "vm", "status": "active", "ip": "192.168.1.106"}
+            {"name": "nhi-core", "type": "lxc", "status": "active", "ip": "0.0.0.0"},
+            {"name": "example-service", "type": "vm", "status": "mock", "ip": "0.0.0.0"}
         ]
 
     for f in Path(REGISTRY_PATH).glob("*.yaml"):
