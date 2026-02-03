@@ -195,6 +195,11 @@ setup_directories() {
     chmod 775 "${NHI_DATA}/cache"  # Writable by ai-agent for dependency graph
     
     log_success "Directories created"
+
+    # Start global logging
+    log_info "Redirecting output to ${NHI_LOG}/install.log"
+    exec > >(tee -a "${NHI_LOG}/install.log") 2>&1
+
 }
 
 install_dependencies() {
@@ -294,12 +299,18 @@ setup_age_keys() {
         echo ""
         
         while true; do
-            read -p "Type 'I HAVE SAVED THE KEY' to continue: " confirmation
+            # Allow read to fail (EOF)
+            read -p "Type 'I HAVE SAVED THE KEY' to continue: " confirmation || true
             if [[ "$confirmation" == "I HAVE SAVED THE KEY" ]]; then
                 log_success "Master key backup confirmed"
                 break
-            else
-                log_warn "Please type exactly: I HAVE SAVED THE KEY"
+                    # But wait, answers.txt HAS the string.
+                    # If read fails BUT populates variable (partial read?), we check variable.
+                    # If variable matches, we break.
+                    if [[ "$confirmation" == "I HAVE SAVED THE KEY" ]]; then break; fi
+                    log_error "Aborting: Master key not confirmed."
+                    exit 1
+                fi
             fi
         done
     else
@@ -644,7 +655,9 @@ infrastructure = scanner.scan_all()
 generator = ContextGenerator(infrastructure)
 generator.generate()
 print('Initial scan complete!')
-" 2>&1 | tee -a "${NHI_LOG}/install.log"
+generator.generate()
+print('Initial scan complete!')
+"
     
     log_success "Initial scan complete"
 }
