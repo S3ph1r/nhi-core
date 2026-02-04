@@ -417,10 +417,34 @@ setup_ai_agent() {
     mkdir -p "${AI_HOME}/projects"
     mkdir -p "${AI_HOME}/.agent/workflows"
     
+    # Configure SOPS for ai-agent
+    mkdir -p "${AI_HOME}/.config/sops/age"
+    cat "${NHI_DATA}/age/"*.key > "${AI_HOME}/.config/sops/age/keys.txt"
+    chmod 600 "${AI_HOME}/.config/sops/age/keys.txt"
+    chown -R "${AI_AGENT_USER}:${AI_AGENT_USER}" "${AI_HOME}/.config"
+    
+    # Add env var to .bashrc
+    if ! grep -q "SOPS_AGE_KEY_FILE" "${AI_HOME}/.bashrc"; then
+        echo 'export SOPS_AGE_KEY_FILE=$HOME/.config/sops/age/keys.txt' >> "${AI_HOME}/.bashrc"
+    fi
+    
     chown -R "${AI_AGENT_USER}:${AI_AGENT_USER}" "${AI_HOME}"
     chown -R "${AI_AGENT_USER}:${AI_AGENT_USER}" "${NHI_DATA}"  # Global data ownership
     
     log_success "AI agent user configured"
+}
+
+configure_hosts() {
+    log_info "Configuring host resolution..."
+    # Ensure Proxmox IP resolves to hostname (default "homelab" if not set)
+    local pve_host=${PROXMOX_NODE:-homelab}
+    
+    if ! grep -q "${PROXMOX_IP}.*${pve_host}" /etc/hosts; then
+        echo "${PROXMOX_IP} ${pve_host}" >> /etc/hosts
+        log_success "Added ${pve_host} -> ${PROXMOX_IP} to /etc/hosts"
+    else
+        log_success "Host resolution already configured"
+    fi
 }
 
 #-------------------------------------------------------------------------------
@@ -556,12 +580,49 @@ setup_repository() {
 setup_cron() {
     log_info "Setting up automatic updates..."
     
-    CRON_CMD="0 * * * * root ${VENV_PATH}/bin/python ${NHI_HOME}/core/context/updater.py"
-    
     echo "${CRON_CMD}" > /etc/cron.d/nhi-core
     chmod 644 /etc/cron.d/nhi-core
     
     log_success "Cron job installed (hourly updates)"
+}
+
+setup_sync_service() {
+    log_info "Setting up Catalog Sync Service..."
+    
+    # 1. Create Service
+    cat > /etc/systemd/system/nhi-sync.service <<EOF
+[Unit]
+Description=NHI Catalog Synchronization
+Wants=nhi-sync.timer
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=${VENV_PATH}/bin/python ${NHI_HOME}/core/context/sync_catalog.py
+WorkingDirectory=${NHI_HOME}
+EOF
+
+    # 2. Create Timer (Run every hour)
+    cat > /etc/systemd/system/nhi-sync.timer <<EOF
+[Unit]
+Description=Run NHI Catalog Sync every hour
+Requires=nhi-sync.service
+
+[Timer]
+Unit=nhi-sync.service
+OnCalendar=hourly
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+
+    # 3. Enable
+    systemctl daemon-reload
+    systemctl enable nhi-sync.timer
+    systemctl start nhi-sync.timer
+    
+    log_success "Sync Service installed (nhi-sync.timer)"
 }
 
 #-------------------------------------------------------------------------------
@@ -753,6 +814,7 @@ main() {
 
     # Setup
     setup_directories
+    configure_hosts         # NEW: Ensure /etc/hosts resolves Proxmox
     install_dependencies
     setup_ai_agent          # NEW: Create user FIRST (needed for permissions)
     setup_repository        # NEW: Clone code (Must be before python setup)
@@ -768,6 +830,7 @@ main() {
     bash "${NHI_HOME}/install-cli.sh"
     
     setup_api_service       # NEW: Start API
+    setup_sync_service      # NEW: Periodic catalog sync (hourly)
     setup_cron
 
     # Initial scan

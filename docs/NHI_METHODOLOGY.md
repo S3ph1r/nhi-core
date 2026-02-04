@@ -345,4 +345,31 @@ services:
 
 ---
 
-*NHI Methodology v1.0 - The foundation for AI-assisted homelab management*
+## 10. Data Governance
+
+### 10.1 Data Sources
+| Type | Path | Auto-Updated |
+|------|------|--------------|
+| Infrastructure | `/var/lib/nhi/infrastructure.yaml` | ✅ Hourly scan |
+| System Map | `/var/lib/nhi/context/system-map.json` | ✅ Hourly |
+| Service Registry | `/var/lib/nhi/registry/services/*.yaml` | Manual |
+| Project Manifest | `<project>/project_manifest.yaml` | Manual |
+
+### 10.2 Schemas
+All data structures MUST validate against:
+- `/var/lib/nhi/schemas/service.schema.json`
+- `/var/lib/nhi/schemas/manifest.schema.json`
+
+### 10.3 Automation
+- **ProxmoxScanner**: Discovers infrastructure (cron hourly)
+- **ContextGenerator**: Builds system-map and .cursorrules
+- **SystemMapBuilder**: Creates comprehensive catalog (`GET /system/catalog`)
+
+### 10.4 Templates
+Use templates for consistency:
+- `/var/lib/nhi/templates/service_registry.yaml.template`
+- `/var/lib/nhi/templates/project_manifest.yaml.template`
+
+---
+
+*NHI Methodology v1.1 - The foundation for AI-assisted homelab management*

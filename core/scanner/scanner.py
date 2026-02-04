@@ -243,3 +243,62 @@ class ProxmoxScanner:
             yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
         
         return output_path
+    
+    def _find_resource(self, vmid: int) -> Optional[Dict]:
+        """Find a resource by VMID and return its type and node."""
+        resources = self.get_vms_and_containers()
+        for r in resources:
+            if r['vmid'] == vmid:
+                return r
+        return None
+    
+    def perform_action(self, vmid: int, action: str) -> Dict:
+        """
+        Perform an action (start/stop/reboot) on an LXC or VM.
+        
+        Args:
+            vmid: The VM/LXC ID
+            action: One of 'start', 'stop', 'reboot'
+            
+        Returns:
+            Dict with status and message
+        """
+        valid_actions = ['start', 'stop', 'reboot']
+        if action not in valid_actions:
+            return {'status': 'error', 'message': f'Invalid action. Must be one of: {valid_actions}'}
+        
+        # Find the resource to determine type and node
+        resource = self._find_resource(vmid)
+        if not resource:
+            return {'status': 'error', 'message': f'Resource {vmid} not found'}
+        
+        res_type = resource['type']  # 'lxc' or 'vm'
+        node = resource['node']
+        
+        try:
+            if res_type == 'lxc':
+                endpoint = self.proxmox.nodes(node).lxc(vmid).status
+            else:  # vm/qemu
+                endpoint = self.proxmox.nodes(node).qemu(vmid).status
+            
+            # Execute the action
+            if action == 'start':
+                endpoint.start.post()
+            elif action == 'stop':
+                endpoint.stop.post()
+            elif action == 'reboot':
+                endpoint.reboot.post()
+            
+            return {
+                'status': 'success',
+                'message': f'{res_type.upper()} {vmid} {action} command sent',
+                'vmid': vmid,
+                'action': action
+            }
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': str(e),
+                'vmid': vmid
+            }
+

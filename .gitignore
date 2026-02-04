@@ -39,3 +39,5 @@ config.yaml
 # Temp
 *.tmp
 *.bak
+age/
+core/context/system-catalog.json

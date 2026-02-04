@@ -1,4 +1,5 @@
-# Registry Module
-from .manifest_generator import ManifestGenerator
+"""Registry module for NHI service management."""
 
-__all__ = ['ManifestGenerator']
+from .manager import RegistryManager
+
+__all__ = ['RegistryManager']

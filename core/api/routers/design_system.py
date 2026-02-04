@@ -60,6 +60,48 @@ async def get_primitives_css():
     return Response(content=content, media_type="text/css")
 
 
+@router.get("/core/icons.css")
+async def get_icons_css():
+    """Serve core icons CSS."""
+    file_path = DESIGN_SYSTEM_PATH / "core" / "icons.css"
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="icons.css not found")
+    
+    with open(file_path, 'r') as f:
+        content = f.read()
+    
+    return Response(content=content, media_type="text/css")
+
+
+@router.get("/core/icons-phosphor.css")
+async def get_icons_phosphor_css():
+    """Serve phosphor icons bridge CSS."""
+    file_path = DESIGN_SYSTEM_PATH / "core" / "icons-phosphor.css"
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="icons-phosphor.css not found")
+    
+    with open(file_path, 'r') as f:
+        content = f.read()
+    
+    return Response(content=content, media_type="text/css")
+
+
+@router.get("/core/icons-heroicons.css")
+async def get_icons_heroicons_css():
+    """Serve heroicons bridge CSS."""
+    file_path = DESIGN_SYSTEM_PATH / "core" / "icons-heroicons.css"
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="icons-heroicons.css not found")
+    
+    with open(file_path, 'r') as f:
+        content = f.read()
+    
+    return Response(content=content, media_type="text/css")
+
+
 @router.get("/themes/{personality}.css")
 async def get_theme_css(personality: str):
     """Serve a personality theme CSS."""
@@ -90,9 +132,10 @@ async def get_theme_manifest(personality: str):
 
 @router.get("/bundle/{personality}.css")
 async def get_bundled_css(personality: str):
-    """Get a bundled CSS file with tokens + primitives + theme."""
+    """Get a bundled CSS file with tokens + primitives + icons + theme."""
     tokens_path = DESIGN_SYSTEM_PATH / "core" / "tokens.css"
     primitives_path = DESIGN_SYSTEM_PATH / "core" / "primitives.css"
+    icons_path = DESIGN_SYSTEM_PATH / "core" / "icons.css"
     theme_path = DESIGN_SYSTEM_PATH / "personalities" / personality / "theme.css"
     
     if not theme_path.exists():
@@ -108,6 +151,10 @@ async def get_bundled_css(personality: str):
     if primitives_path.exists():
         with open(primitives_path, 'r') as f:
             bundle.append(f"/* === PRIMITIVES === */\n{f.read()}")
+
+    if icons_path.exists():
+        with open(icons_path, 'r') as f:
+            bundle.append(f"/* === ICONS === */\n{f.read()}")
     
     with open(theme_path, 'r') as f:
         # Remove @import statements as we're bundling

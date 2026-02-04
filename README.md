@@ -25,31 +25,40 @@ curl -sL https://raw.githubusercontent.com/S3ph1r/nhi-core/main/genesis.sh | sud
 ## Features
 
 - 🔍 **Auto-Discovery** - Scans Proxmox infrastructure via API
+- 🕵️ **Runtime Scanning** - Deep inference of dependencies via SSH/TCP analysis
 - 📝 **AI Context Generation** - Creates `.cursorrules` and `system-map.json` for AI assistants
-- 🔐 **Secrets Management** - SOPS/GPG encrypted credentials
-- 📁 **SMB Share** - Access from Windows via RaiDrive
-- ⏰ **Hourly Updates** - Cron job keeps context fresh
+- 🔐 **Secrets Management** - SOPS/Age encrypted credentials
+- 🚀 **Automated Deploy** - One-command deployment of standardized AI-ready containers
+- ⏰ **Self-Healing** - Hourly sync job keeps context fresh
 
-## Architecture
+## Documentation & Catalog
+
+For a detailed map of the codebase and system architecture, see:
+👉 **[System Catalog & Architecture](docs/CATALOG.md)**
+
+Start here:
+- 👶 **[Getting Started Guide](docs/GETTING_STARTED.md)** (Humans)
+- 🤖 **[Agent Protocol](docs/AGENTS.md)** (AI Agents)
+
+## Quick Architecture Overview
 
 ```
 /opt/nhi-core/           # Application code
-├── genesis.sh           # Bootstrap script
+├── genesis.sh           # Bootstrap installer
 ├── core/
-│   ├── scanner/         # Proxmox API client
-│   ├── context/         # AI context generator
-│   ├── security/        # SOPS integration
-│   └── templates/       # LXC/VM blueprints
+│   ├── api/             # FastAPI Backend
+│   ├── context/         # System Map & Sync
+│   ├── inference/       # Runtime Scanner (SSH)
+│   ├── registry/        # YAML Registry Manager
+│   └── project/         # Scaffolding Engine
+└── scripts/             # Operational Tools (Deploy, Fix, Sync)
 
-/var/lib/nhi/            # Persistent data (bind-mount to Proxmox host)
-├── config.yaml          # Configuration
-├── context/
-│   ├── .cursorrules     # AI rules (Markdown)
-│   └── system-map.json  # Machine-readable map
-├── registry/            # Infrastructure inventory
-├── secrets/             # Encrypted credentials
-└── templates/           # User templates
-
+/var/lib/nhi/            # Data Governance
+├── registry/            # Service Definitions (YAML)
+├── context/             # System State (JSON)
+├── secrets/             # Encrypted Credentials (SOPS)
+└── age/                 # Encryption Keys
+```
 /var/log/nhi/            # Logs
 ├── install.log          # Installation log
 └── cron.log             # Hourly update log

@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pathlib import Path
-from core.api.routers import system, backup, projects, design_system
+from core.api.routers import system, backup, projects, design_system, services, docs
 
 app = FastAPI(
     title="NHI Brain API",
@@ -22,9 +22,11 @@ app.add_middleware(
 
 # Include Routers
 app.include_router(system.router, prefix="/system", tags=["System"])
+app.include_router(services.router, prefix="/services", tags=["Services"])
 app.include_router(backup.router, prefix="/backup", tags=["Backup"])
 app.include_router(projects.router, prefix="/projects", tags=["Projects"])
 app.include_router(design_system.router, prefix="/design-system", tags=["Design System"])
+app.include_router(docs.router, prefix="/docs", tags=["Documentation"])
 
 # Dashboard Static Files
 DASHBOARD_PATH = Path("/home/ai-agent/projects/nhi-dashboard")
