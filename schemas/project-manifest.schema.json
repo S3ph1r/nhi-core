@@ -177,6 +177,36 @@
                 }
             }
         },
+        "backup": {
+            "type": "object",
+            "description": "Backup policy and data governance for Phoenix Protocol",
+            "properties": {
+                "persistence": {
+                    "type": "array",
+                    "description": "List of directories/files containing Seed Data (Must be backed up)",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "exclude": {
+                    "type": "array",
+                    "description": "List of patterns to explicitly exclude from backup",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "restore_hooks": {
+                    "type": "array",
+                    "description": "Commands to execute after data restoration to rebuild reconstructible state",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": [
+                "persistence"
+            ]
+        },
         "nhi": {
             "type": "object",
             "required": [

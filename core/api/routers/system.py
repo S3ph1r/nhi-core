@@ -143,3 +143,34 @@ async def refresh_system_catalog():
         "path": output_path,
         "summary": builder.build_catalog()["summary"]
     }
+
+
+@router.get("/logs")
+async def get_system_logs(lines: int = 20):
+    """Get system logs from cron.log file."""
+    import os
+    from typing import List
+    
+    log_file = "/var/log/nhi/cron.log"
+    log_lines: List[str] = []
+    
+    try:
+        if os.path.exists(log_file):
+            with open(log_file, 'r') as f:
+                # Read all lines
+                all_lines = f.readlines()
+                # Get last N lines, strip newlines
+                log_lines = [line.strip() for line in all_lines[-lines:]]
+        
+        return {
+            "lines": log_lines,
+            "count": len(log_lines),
+            "source": log_file
+        }
+    except Exception as e:
+        return {
+            "lines": [],
+            "count": 0,
+            "source": log_file,
+            "error": str(e)
+        }

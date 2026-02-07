@@ -13,7 +13,7 @@ def get_docs_path(project_folder: str) -> Optional[Path]:
     """Resolve the docs directory for a given project folder."""
     
     # Special case for NHI-CORE
-    if project_folder == "nhi-core":
+    if project_folder in ["nhi-core", "nhi-core-code"]:
         if CORE_DEV_PATH.exists():
             return CORE_DEV_PATH / "docs"
         elif CORE_PROD_PATH.exists():

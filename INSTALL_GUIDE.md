@@ -143,7 +143,7 @@ ssh ai-agent@192.168.1.110 "whoami && hostname"
 ssh ai-agent@192.168.1.110
 
 # Install dependencies
-sudo apt update && sudo apt install -y git python3 python3-pip python3-venv curl
+sudo apt update && sudo apt install -y git python3 python3-pip python3-venv curl smbclient
 
 # Create directories
 sudo mkdir -p /opt/nhi-core /var/lib/nhi /var/log/nhi

@@ -1,0 +1,14 @@
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I"]      # base: errori, warning, import-sort
+ignore = ["E501"]             # tolleriamo righe lunghe per ora
+target-version = "py39"
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]      # permetti import non usati in __init__
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = false
+warn_unused_configs = false
+# strict = true                # ← future step: de-commenta per strict mode

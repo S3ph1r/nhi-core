@@ -313,21 +313,7 @@ Per garantire che gli agenti rispettino NHIDS, il \`.cursorrules\` di ogni proge
 
 \---
 
-## 8. Standard Functional Components
-
-Oltre agli stili visivi, NHIDS definisce **Moduli Funzionali Standard** che devono essere usati al posto di implementazioni custom.
-
-### 8.1 SMB Network Browser
-**Scopo**: Selezionare file o cartelle da condivisioni di rete SMB/CIFS.
-**Componente**: `SMBFolderPicker.js` (in `nhi-dashboard/src/components/`)
-**Backend**: Usa `/system/network/smb` (NHI-CORE).
-
-**Regola**:
-> "Se devi chiedere all'utente un percorso di rete, USA QUESTO COMPONENTE. Non chiedere all'utente di digitare path manualmente."
-
----
-
-\#\# 9\. Checklist Implementazione in NHI-CORE
+\#\# 8\. Checklist Implementazione in NHI-CORE
 
 Per rendere operativo questo sistema nel tuo scaffolding:
 

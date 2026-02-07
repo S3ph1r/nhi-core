@@ -46,3 +46,5 @@ async def dashboard():
         return FileResponse(index_path)
     return {"error": "Dashboard not installed"}
 
+
+# Reload Trigger: updated docs.py logic for Core path resolution

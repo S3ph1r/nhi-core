@@ -227,7 +227,8 @@ install_dependencies() {
         curl \
         jq \
         sshpass \
-        nfs-common
+        nfs-common \
+        smbclient
 
     # Install Age
     if ! command -v age &> /dev/null; then

@@ -368,6 +368,133 @@ class BackupManager:
             'last_backup': self.config.get('last_backup'),
             'retention': self.config.get('retention', {})
         }
+
+    def get_policy_matrix(self) -> List[Dict]:
+        """
+        Returns the full matrix of services and their backup capabilities.
+        Used by the Dashboard frontend.
+        """
+        graph = self.resolver.get_graph()
+        matrix = []
+        
+        for name, info in graph.items():
+            backup_meta = info.get('backup', {})
+            svc_type = info.get('type', 'lxc')
+            
+            # Use appropriate prefix for ID
+            prefix = 'prj' if svc_type == 'project' else 'svc'
+            target_id = f"{prefix}_{name}"
+            
+            # Policy from config (if any)
+            # We look in 'services' or 'projects' section of config
+            config_section = 'projects' if svc_type == 'project' else 'services'
+            policy = self.config.get(config_section, {}).get(target_id, {})
+            
+            item = {
+                'id': target_id,
+                'name': name,
+                'type': svc_type,
+                'has_persistence': bool(backup_meta.get('persistence')),
+                'backup': {
+                    'target': policy.get('target', 'none'),
+                    'scope': policy.get('scope', 'full' if not backup_meta.get('persistence') else 'hybrid'),
+                    'frequency': policy.get('frequency', 'daily' if svc_type == 'lxc' else 'weekly'),
+                    'last_run': policy.get('last_run', 'N/A'),
+                    'size': policy.get('size', 'N/A')
+                }
+            }
+            
+            # Projects have paths, LXCs have VMIDs
+            if svc_type == 'project':
+                item['path'] = info.get('path')
+            else:
+                item['vmid'] = info.get('vmid')
+                
+            matrix.append(item)
+            
+        return matrix
+
+    def run_phoenix_backup(self, target_id: str) -> BackupResult:
+        """
+        Execute a Data Only (Phoenix) backup.
+        Extracts only persistence paths defined in manifest.
+        """
+        # Identify target
+        matrix = self.get_policy_matrix()
+        target = next((item for item in matrix if item['id'] == target_id), None)
+        
+        if not target:
+            raise ValueError(f"Target {target_id} not found")
+            
+        name = target['name']
+        vmid = target.get('vmid')
+        is_project = target['type'] == 'project'
+        
+        # Get persistence paths from manifest
+        persistence = []
+        if is_project:
+            manifest_path = Path(target['path']) / "project_manifest.yaml"
+        else:
+            manifest_path = Path(f"/var/lib/nhi/registry/services/{name}.yaml")
+            
+        try:
+            with open(manifest_path, 'r') as f:
+                data = yaml.safe_load(f) or {}
+                persistence = data.get('backup', {}).get('persistence', [])
+                exclude = data.get('backup', {}).get('exclude', [])
+        except Exception as e:
+            return BackupResult(False, vmid or 0, name, f"Failed to read manifest: {e}")
+            
+        if not persistence:
+            return BackupResult(False, vmid or 0, name, "No persistence paths defined for Phoenix backup")
+            
+        # Target archive
+        temp_dir = Path("/tmp/nhi_backups")
+        temp_dir.mkdir(exist_ok=True)
+        archive_name = f"phoenix_{name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.tar.gz"
+        archive_path = temp_dir / archive_name
+        
+        try:
+            if is_project:
+                # Local project on host
+                cmd = ["tar", "-czf", str(archive_path)]
+                for ex in exclude:
+                    cmd.extend(["--exclude", ex])
+                cmd.extend(persistence)
+                
+                logger.info(f"Creating project backup: {' '.join(cmd)}")
+                subprocess.run(cmd, check=True, cwd=target['path'])
+            else:
+                # LXC - Need to pull data
+                # This is more complex if not on host. Assuming we can use pct pull
+                # First tar inside LXC
+                remote_tmp = f"/tmp/{archive_name}"
+                tar_cmd = ["tar", "-czf", remote_tmp]
+                for ex in exclude:
+                    tar_cmd.extend(["--exclude", ex])
+                tar_cmd.extend(persistence)
+                
+                # Execute in LXC via Proxmox node (requires SSH or API)
+                # For MVP, assuming we can reach proxmox node via SSH or API.
+                # Let's use a placeholder for the actual extraction logic if not on-node.
+                # If we are on 160 (container) and target is 105, we need the node 192.168.1.2.
+                
+                return BackupResult(False, vmid, name, "LXC Data Extraction requires Proxmox Node Access (SSH/API implementation pending)")
+                
+            # TODO: Transport to real storage (SMB/Rclone)
+            
+            return BackupResult(
+                success=True,
+                vmid=vmid or 0,
+                name=name,
+                message=f"Phoenix backup successful: {archive_name}",
+                backup_file=str(archive_path),
+                size_bytes=archive_path.stat().st_size
+            )
+            
+        except Exception as e:
+            return BackupResult(False, vmid or 0, name, f"Phoenix backup failed: {e}")
+
     
     def restore(self, vmid: int, backup_id: str, target_vmid: Optional[int] = None) -> bool:
         """

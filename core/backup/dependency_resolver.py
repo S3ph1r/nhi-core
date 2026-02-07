@@ -116,38 +116,40 @@ class DependencyResolver:
             logger.warning(f"Registry path does not exist: {self.registry_path}")
             return graph
         
-        for manifest_file in self.registry_path.glob("*.yaml"):
-            try:
-                with open(manifest_file, 'r') as f:
-                    data = yaml.safe_load(f)
-                
-                if not data or 'name' not in data:
+        # Add Projects from /home/ai-agent/projects
+        projects_path = Path("/home/ai-agent/projects")
+        if projects_path.exists():
+            for project_dir in projects_path.iterdir():
+                if not project_dir.is_dir():
                     continue
                 
-                name = data['name']
-                deps = data.get('dependencies', {})
+                manifest_file = project_dir / "project_manifest.yaml"
+                if not manifest_file.exists():
+                    continue
                 
-                # Handle both old format (list) and new format (dict)
-                if isinstance(deps, list):
-                    required = deps
-                    optional = []
-                else:
-                    required = deps.get('required', [])
-                    optional = deps.get('optional', [])
-                
-                graph[name] = {
-                    'vmid': data.get('vmid'),
-                    'ip': data.get('network', {}).get('ip'),
-                    'status': data.get('status', 'unknown'),
-                    'type': data.get('type', 'lxc'),
-                    'requires': required,
-                    'optional': optional,
-                    'is_infrastructure': name.lower() in self.INFRASTRUCTURE_SERVICES
-                }
-                
-            except Exception as e:
-                logger.error(f"Failed to parse manifest {manifest_file}: {e}")
-                continue
+                try:
+                    with open(manifest_file, 'r') as f:
+                        data = yaml.safe_load(f)
+                    
+                    if not data or 'name' not in data:
+                        continue
+                    
+                    name = data['name']
+                    # Projects are prefix with 'prj_' to avoid collisions if necessary
+                    # but here we use the name as per dashboard expectation
+                    # id is handled in matrix builder but name is key here
+                    
+                    graph[name] = {
+                        'path': str(project_dir),
+                        'status': 'development',
+                        'type': 'project',
+                        'requires': data.get('dependencies', []),
+                        'optional': [],
+                        'is_infrastructure': False,
+                        'backup': data.get('backup', {})
+                    }
+                except Exception as e:
+                    logger.error(f"Failed to parse project manifest {manifest_file}: {e}")
         
         # Save to cache
         self._save_cache(graph)
