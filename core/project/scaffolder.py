@@ -21,7 +21,9 @@ class ProjectScaffolder:
 name: {name}
 description: "{description}"
 version: "0.1.0"
-status: "planning"
+status:
+  stage: "planning"
+  last_updated: "{created}T00:00:00Z"
 
 type: {project_type}
 created: "{created}"
