@@ -1,0 +1,1 @@
+> This document has moved to [`docs/specs/NHI_DESIGN_SYSTEM.md`](docs/specs/NHI_DESIGN_SYSTEM.md)

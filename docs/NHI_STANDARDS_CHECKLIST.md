@@ -33,6 +33,13 @@ These are **mandatory** requirements. Projects failing these CANNOT be deployed.
 |-------------|-------|-----|
 | Dockerfile present | Production-ready container | Consistent deployment |
 | Non-root execution | Container runs as non-root user | Security best practice |
+
+### Quality Assurance
+
+| Requirement | Check | Why |
+|-------------|-------|-----|
+| QA tools configured | `make qa` exits 0 | Prevents regressions, enforces style |
+| QA templates present | `/opt/nhi-core/quality-template` copied | Standardized lint/type-check rules |
 | Port documented | Port number in manifest | Avoid conflicts |
 
 ---

@@ -1,0 +1,1 @@
+> This document has moved to [`docs/specs/NHI-CORE_Implementation_Guide_v1.1.md`](docs/specs/NHI-CORE_Implementation_Guide_v1.1.md)

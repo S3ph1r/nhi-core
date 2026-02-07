@@ -14,8 +14,9 @@
 
 **PREREQUISITE**: Before ANY 'Planning' or 'Execution' phase, you **MUST**:
 1.  **READ** `/opt/nhi-core/docs/NHI_STANDARDS_CHECKLIST.md`.
-2.  **INCLUDE** a "Pre-flight Check" item in your `task.md`.
-3.  **ABORT** if you cannot verify compliance with NHI Standards.
+2.  **READ** `/opt/nhi-core/docs/AGENTS.md` for bootstrap protocol.
+3.  **INCLUDE** a "Pre-flight Check" item in your `task.md`.
+4.  **ABORT** if you cannot verify compliance with NHI Standards.
 
 **VIOLATION OF THIS PROTOCOL IS A CRITICAL FAILURE.**
 
@@ -30,6 +31,10 @@ Instead of hardcoding IPs and ports, **ALWAYS** refer to the following files:
 | **Config/Paths** | `/var/lib/nhi/config.yaml` | Core paths, Backups, Auth. |
 | **Methodology** | `/opt/nhi-core/docs/NHI_METHODOLOGY.md` | **MANDATORY RULES**, not just reference. |
 | **Design System** | `/var/lib/nhi/design-system/registry.yaml` | Available themes/personalities for frontend. |
+| **Getting Started** | `/opt/nhi-core/docs/GETTING_STARTED.md` | Bootstrap guide for new deployments. |
+| **Quality Assurance** | `/opt/nhi-core/docs/QUALITY_ASSURANCE.md` | Linting & type-checking standards. |
+| **Agent Protocol** | `/opt/nhi-core/docs/AGENTS.md` | Bootstrap protocol for AI agents. |
+| **Implementation Guide** | `/opt/nhi-core/docs/NHI-CORE_Implementation_Guide_v1.1.md` | Technical implementation specifications. |
 | **Projects Root** | `/home/ai-agent/projects/` | All user projects. Each is a separate Git repo. |
 | **Project Docs** | `/home/ai-agent/projects/<project>/docs/` | Project-specific documentation, manifests, manuals. |
 
@@ -145,7 +150,18 @@ frontend:
 - Actions: `.nhi-btn-primary`, `.nhi-btn-secondary`, `.nhi-btn-danger`
 - Feedback: `.nhi-alert-info`, `.nhi-badge-success`, `.nhi-status-dot`
 
----
+### 5.5 Quality Assurance
+Before committing any code changes:
+1. **Run QA checks**: `make qa` (see `/opt/nhi-core/docs/QUALITY_ASSURANCE.md`)
+2. **Verify compliance**: Ensure all quality gates pass
+3. **Auto-fix when possible**: `make fix` for automatic corrections
+
+**Quality gates include**:
+- Python: ruff (linting) + mypy (type checking)
+- JavaScript/TypeScript: eslint
+- CSS/SCSS: prettier
+
+----
 
 ## 6. 🚀 Development Workflow
 1.  **PRE-FLIGHT**: verify `task.md` checklist against `NHI_STANDARDS_CHECKLIST.md`.
@@ -153,7 +169,8 @@ frontend:
 3.  **Check Status**: Verify target LXC is `running` in `system-map.json`.
 4.  **Connect**: SSH into the target IP using `ai-agent`.
 5.  **Deploy/Edit**: Work in `/home/ai-agent/projects/<project>/` or via SSH.
-6.  **Verify**: Apply Protocol #3.
+6.  **Quality Check**: Run `make qa` to verify code quality (see `/opt/nhi-core/docs/QUALITY_ASSURANCE.md`).
+7.  **Verify**: Apply Protocol #3.
 
 ---
 
@@ -230,6 +247,76 @@ python3 /opt/nhi-core/scripts/deploy_complete.py \
   --name myservice --vmid 180 --ip 192.168.1.180
 ```
 
+---
+
+## 9. 🔄 Git Workflow & Repository Management
+
+**⚠️ CRITICAL**: Distinzione tra **Framework** (NHI-CORE) e **Progetti Utente**!
+
+### 9.1 Context Awareness
+**Prima di qualsiasi operazione Git**, identifica il contesto:
+
+| Contesto | Path | Repository | Workflow | Token |
+|----------|------|------------|----------|--------|
+| **Framework** | `/opt/nhi-core` | `S3ph1r/nhi-core` | Manuale raro | Pre-configurato |
+| **Progetto** | `/home/ai-agent/projects/*` | **Repo separato** | Standard utente | Condiviso |
+
+### 9.2 GitHub Token Retrieval
+```bash
+# Recupera PAT condiviso da SOPS
+sops --decrypt /var/lib/nhi/secrets/services/github.yaml
+# Usa il valore github_token per configurare remote
+```
+
+### 9.3 New Project Setup Protocol
+Quando crei un nuovo progetto in `/home/ai-agent/projects/`:
+
+1. **Crea repository GitHub**: `nhi-<nomeprogetto>`
+2. **Configura remote**: `git remote add origin https://TOKEN@github.com/USER/nhi-nome.git`
+3. **Setup iniziale**: `git push -u origin main`
+4. **Documenta**: Aggiorna `project_manifest.yaml` con repo URL
+
+### 9.4 Standard Project Workflow
+```bash
+cd /home/ai-agent/projects/<nome>
+git status                          # Check stato
+git add -A                          # Stage changes  
+git commit -m "feat: descrizione"   # Commit descrittivo
+git push origin main               # Push quando pronto
+```
+
+### 9.5 Framework Development (AUTOMATED)
+Il framework `/opt/nhi-core` ha **push automatico ogni ora** via cron:
+- **Script**: `/opt/nhi-core/core/context/updater.py`
+- **Log**: `/var/log/nhi/cron.log`
+- **Trigger**: Modifiche a `/var/lib/nhi` (data) → auto-commit+push
+
+**Push manuale solo per emergenze**:
+```bash
+cd /opt/nhi-core
+git status
+git add -A  
+git commit -m "system: descrizione modifica"
+git push origin main
+```
+
+**⚠️ WARNING**: Modifiche framework richiedono estrema cautela!
+
+### 9.6 Project vs Framework Decision Tree
+```
+Sei in /opt/nhi-core? 
+  ↓ YES
+  → Framework development (raro, pericoloso)
+  ↓ NO  
+Sei in /home/ai-agent/projects/*?
+  ↓ YES
+  → User project (normale sviluppo)
+  ↓ NO
+→ Errore! Contatta amministratore.
+```
+
+Per workflow completo: **LEGGI** `/opt/nhi-core/docs/GIT_WORKFLOW.md`
+
 This automatically:
 1. Creates LXC via Proxmox API
 2. Creates `ai-agent` user
@@ -247,6 +334,34 @@ GET /services/scan/runtime/myservice  # Single service
 This SSH into containers and reads active network connections.
 
 > **RULE**: If a service/project doesn't have proper registry/manifest, it is NON-COMPLIANT.
+
+---
+
+## 9. ✅ Quality Assurance (QA) – MANDATORY before “completed”
+
+**Pre-requisite**: ogni task che modifica codice deve superare i controlli di qualità.
+
+### 9.1 Comandi da eseguire prima di dichiarare “completato”
+```bash
+# Se il progetto NON ha Makefile → copia template
+ cp -r /opt/nhi-core/quality-template/* .
+# Esegui sempre
+ make qa          # verifica solo
+# oppure, se vuoi auto-fix
+ make fix
+```
+
+### 9.2 Regole attive (step 0 – base)
+- Python: ruff (E,F,I) + mypy (non-strict)
+- JS/CSS: prettier default + eslint raccomandato
+
+### 9.3 Se i controlli falliscono
+- Correggi gli errori riportati
+- Se non sai come → chiedi all’utente
+- **Non** marcare il task come “completed” finché `make qa` restituisce exit-code ≠ 0
+
+### 9.4 Documentazione completa
+Vedi: `/opt/nhi-core/quality-template/QUALITY_GUIDE.md`
 
 ---
 *Generated by NHI-CORE v1.2 Context Generator (Template-based)*

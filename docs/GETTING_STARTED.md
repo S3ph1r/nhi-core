@@ -37,7 +37,9 @@ You don't need to manually install NHI-CORE. Your AI Agent will do it for you.
     *   Sit back and watch it deploy the LXC container and install the Core.
 
 ## 5. What's Next?
+
 Once the Agent finishes:
 1.  **Connect**: Map the shared drive `N:` via RaiDrive (Address: LXC IP, User: `ai-agent`).
 2.  **Context**: Look in `N:\nhi-data\context\`. You will confirm the file `.cursorrules` is there.
+3.  **Quality Assurance**: Before you start coding, run `make qa` inside any project to ensure style & type checks pass (see [Quality Assurance](QUALITY_ASSURANCE.md)).
 3.  **Expand**: You can now ask the Agent to "Deploy a new Plex server" or "Set up Home Assistant", and it will use the context it just built.
