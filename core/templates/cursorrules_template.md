@@ -22,6 +22,27 @@
 
 ---
 
+## 🚨 NHI-CORE DEVELOPMENT ENVIRONMENT CHECK
+
+**BEFORE working on NHI-CORE itself**, check if this is a **development/test machine**:
+
+```bash
+# Check for development environment
+if [ -f "/home/ai-agent/DEVELOPMENT_WORKFLOW.md" ]; then
+    echo "⚠️  DEVELOPMENT MACHINE DETECTED - Special rules apply!"
+    echo "   Read: /home/ai-agent/DEVELOPMENT_WORKFLOW.md"
+    echo "   Use: /home/ai-agent/check-nhi-env.sh"
+fi
+```
+
+**DEVELOPMENT MACHINE RULES** (only if file exists):
+- **NEVER** modify `/opt/nhi-core/` directly
+- **USE** symlink `/home/ai-agent/nhi-core-code/` → `/opt/nhi-core/`
+- **READ** `/home/ai-agent/DEVELOPMENT_WORKFLOW.md` first
+- **Production machines**: NHI-CORE is read-only (no symlink)
+
+---
+
 ## 1. 🗺️ Context & Data Sources (Dynamic SSOT)
 Instead of hardcoding IPs and ports, **ALWAYS** refer to the following files:
 
@@ -34,6 +55,7 @@ Instead of hardcoding IPs and ports, **ALWAYS** refer to the following files:
 | **Getting Started** | `/opt/nhi-core/docs/GETTING_STARTED.md` | Bootstrap guide for new deployments. |
 | **Quality Assurance** | `/opt/nhi-core/docs/QUALITY_ASSURANCE.md` | Linting & type-checking standards. |
 | **Agent Protocol** | `/opt/nhi-core/docs/AGENTS.md` | Bootstrap protocol for AI agents. |
+| **AI Dev Checklist** | `/opt/nhi-core/docs/AI_DEVELOPMENT_CHECKLIST.md` | Quick reference for AI development workflow. |
 | **Implementation Guide** | `/opt/nhi-core/docs/NHI-CORE_Implementation_Guide_v1.1.md` | Technical implementation specifications. |
 | **Projects Root** | `/home/ai-agent/projects/` | All user projects. Each is a separate Git repo. |
 | **Project Docs** | `/home/ai-agent/projects/<project>/docs/` | Project-specific documentation, manifests, manuals. |
@@ -158,8 +180,31 @@ Before committing any code changes:
 
 **Quality gates include**:
 - Python: ruff (linting) + mypy (type checking)
-- JavaScript/TypeScript: eslint
+- JavaScript/TypeScript: eslint + prettier
 - CSS/SCSS: prettier
+
+#### For New Projects
+When starting a new project, **ALWAYS** setup QA first:
+```bash
+# Copy QA templates based on project type
+# For JavaScript/Node.js projects:
+cp /opt/nhi-core/quality/templates/package.json.template ./package.json
+cp /opt/nhi-core/quality/templates/.eslintrc.json.template ./.eslintrc.json
+cp /opt/nhi-core/quality/templates/.prettierrc.json.template ./.prettierrc.json
+cp /opt/nhi-core/quality/templates/Makefile.js.template ./Makefile
+
+# For Python projects:
+cp /opt/nhi-core/quality/templates/pyproject.toml.template ./pyproject.toml
+cp /opt/nhi-core/quality/templates/Makefile.python.template ./Makefile
+
+# For all projects:
+cp /opt/nhi-core/quality/templates/.gitignore.template ./.gitignore
+```
+
+**QA in Production**: The QA system is **development-only**. In production:
+- If Node.js/Python available → QA runs (optional)
+- If tools missing → QA skipped (no deployment blockage)
+- Projects deploy as static assets without QA dependencies
 
 ----
 
@@ -199,6 +244,16 @@ Every project in `/home/ai-agent/projects/` **MUST** have:
 - **Template**: `/var/lib/nhi/templates/project_manifest.yaml.template`
 
 **Required fields**: `name`, `version`, `dependencies.services`
+
+**CRITICAL - Status Structure**: The `status` field **MUST** be a structured object:
+```yaml
+status:
+  stage: "planning"  # Valid values: planning, development, testing, production, archive
+  last_updated: "2026-02-07T12:00:00Z"  # ISO 8601 timestamp
+```
+
+**⚠️ WARNING**: Legacy projects with `status: "string"` will cause API errors when updating status.
+**Fix**: Convert to structured format before status operations.
 
 ### 8.3 System Catalog
 The comprehensive system state is available at:
@@ -337,11 +392,113 @@ This SSH into containers and reads active network connections.
 
 ---
 
-## 9. ✅ Quality Assurance (QA) – MANDATORY before “completed”
+## 10. 🧪 Quality Assurance (QA)
+
+### 10.1 QA System Overview
+**Prima di ogni commit/push, esegui sempre i controlli QA!**
+
+| Stack | Tools | Config | Comandi |
+|-------|-------|--------|---------|
+| **Python** | ruff, mypy | `pyproject.toml` | `make qa` |
+| **JavaScript** | eslint, prettier | `package.json`, `.eslintrc.json` | `make qa` |
+
+### 10.2 QA Setup per Progetto
+```bash
+# Python project
+cp /opt/nhi-core/quality/templates/pyproject.toml ./
+cp /opt/nhi-core/quality/templates/Makefile ./
+pip install ruff mypy
+
+# JavaScript project  
+cp /opt/nhi-core/quality/templates/package.json.template ./package.json
+cp /opt/nhi-core/quality/templates/.eslintrc.json.template ./.eslintrc.json
+cp /opt/nhi-core/quality/templates/.prettierrc.json.template ./.prettierrc.json
+cp /opt/nhi-core/quality/templates/Makefile.js.template ./Makefile
+npm install
+```
+
+### 10.3 Comandi QA Standard
+```bash
+make qa        # Esegui tutti i controlli
+make fix       # Auto-fix dove possibile  
+make clean     # Pulisci cache
+```
+
+### 10.4 Interpretazione Risultati
+- ✅ **0 problems** → Codice pronto per commit
+- ⚠️ **Warnings** → Ottimizzazioni suggerite
+- ❌ **Errors** → Correggi prima di commitare
+
+### 10.5 Esempio Output QA
+```
+✖ 49 problems (35 errors, 14 warnings)
+  - 'NHI_API' is not defined
+  - Unexpected console statement
+  - Use array destructuring
+```
+
+**NOTE**: I problemi reali vanno corretti, i warning sono suggerimenti.
+
+### 10.6 Auto-Gestione Variabili Globali
+Quando sviluppi nuovo codice JavaScript:
+
+**1. Rileva automaticamente le variabili globali:**
+```bash
+# Analizza tutti i file JS nel progetto
+node /opt/nhi-core/quality/scripts/detect-globals.js
+
+# Genera report dettagliato: global-variables-report.json
+```
+
+**2. Aggiorna configurazione ESLint prima di `make qa`:**
+```bash
+# Modalità automatica (default: confidence >= 0.8)
+node /opt/nhi-core/quality/scripts/update-globals.js
+
+# Modalità interattiva (scegli manualmente)
+node /opt/nhi-core/quality/scripts/update-globals.js report.json .eslintrc.json interactive
+
+# Filtro per confidenza
+node /opt/nhi-core/quality/scripts/update-globals.js report.json .eslintrc.json auto 0.9
+```
+
+**3. Script disponibili:**
+```
+/opt/nhi-core/quality/scripts/
+├── detect-globals.js    # Rileva variabili globali
+└── update-globals.js    # Aggiorna .eslintrc.json
+```
+
+**4. Workflow consigliato:**
+```bash
+# 1. Dopo aver scritto nuovo codice
+node /opt/nhi-core/quality/scripts/detect-globals.js
+
+# 2. Aggiorna configurazione (controlla l'output)
+node /opt/nhi-core/quality/scripts/update-globals.js
+
+# 3. Verifica che gli errori siano risolti
+make qa
+```
+
+### 10.7 QA Templates Location
+```
+/opt/nhi-core/quality/templates/
+├── pyproject.toml           # Python rules
+├── package.json.template    # JS dependencies
+├── .eslintrc.json.template # JS linting
+├── .prettierrc.json.template # Formatting
+├── Makefile                # Python automation
+└── Makefile.js.template    # JS automation
+```
+
+---
+
+## 11. 🔧 Development Guidelines
 
 **Pre-requisite**: ogni task che modifica codice deve superare i controlli di qualità.
 
-### 9.1 Comandi da eseguire prima di dichiarare “completato”
+### 11.1 Comandi da eseguire prima di dichiarare “completato”
 ```bash
 # Se il progetto NON ha Makefile → copia template
  cp -r /opt/nhi-core/quality-template/* .
@@ -351,16 +508,16 @@ This SSH into containers and reads active network connections.
  make fix
 ```
 
-### 9.2 Regole attive (step 0 – base)
+### 11.2 Regole attive (step 0 – base)
 - Python: ruff (E,F,I) + mypy (non-strict)
 - JS/CSS: prettier default + eslint raccomandato
 
-### 9.3 Se i controlli falliscono
+### 11.3 Se i controlli falliscono
 - Correggi gli errori riportati
 - Se non sai come → chiedi all’utente
 - **Non** marcare il task come “completed” finché `make qa` restituisce exit-code ≠ 0
 
-### 9.4 Documentazione completa
+### 11.4 Documentazione completa
 Vedi: `/opt/nhi-core/quality-template/QUALITY_GUIDE.md`
 
 ---

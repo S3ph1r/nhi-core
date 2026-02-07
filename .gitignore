@@ -41,3 +41,8 @@ config.yaml
 *.bak
 age/
 core/context/system-catalog.json
+
+# Development Environment (Machine-specific)
+DEVELOPMENT_WORKFLOW.md
+AGENT_REMINDER_NHI_CORE.md
+check-nhi-env.sh
